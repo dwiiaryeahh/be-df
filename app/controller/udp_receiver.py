@@ -1,4 +1,4 @@
-from config import BufferSize, MAX_RETRIES
+from app.config.utils import BufferSize, MAX_RETRIES
 import socket
 import time
 

@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding = 'UTF-8' standalone = 'no' ?>
+<content>
+    <urfcn> 10838</urfcn>
+    <cpi> 299</cpi>
+    <power> 5</power>
+    <listenUrfcn> 10838</listenUrfcn>
+    <listenCpi> 342</listenCpi>
+    <publicLai> 41196</publicLai>
+    <sib>
+        <mcc itemCnt = "3"> 5 1 0</mcc>
+        <mnc itemCnt = "2"> 1 0</mnc>
+        <lai> 425</lai>
+        <rai> 57358</rai>
+        <cellId> 23</cellId>
+        <cpichPwr> 30</cpichPwr>
+        <intraNbCellCpi itemCnt = "3"> 299 342 102</intraNbCellCpi>
+        <interFreqCell itemCnt = "0">
+        </interFreqCell>
+        <gsmCell itemCnt = "1">
+            <item>
+                <ncc> 2</ncc>
+                <bcc> 4</bcc>
+                <pcs1900Used>false </pcs1900Used>
+                <bchArfcn> 110</bchArfcn>
+            </item>
+        </gsmCell>
+    </sib>
+</content>

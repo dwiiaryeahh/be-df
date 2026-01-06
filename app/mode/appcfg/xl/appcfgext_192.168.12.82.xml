@@ -1,0 +1,59 @@
+<?xml version='1.0' encoding = 'UTF-8' standalone = 'no' ?>
+<content>
+    <workTypeCfgActive>true </workTypeCfgActive>
+    <workTypeCfg>
+        <workType> 0</workType>
+        <followParaValidIndi>false </followParaValidIndi>
+        <imeiTry>true </imeiTry>
+        <tacUpdatePeriodInSec> 360</tacUpdatePeriodInSec>
+        <cellRipRptEn>false </cellRipRptEn>
+        <ueRptWithMeas>true </ueRptWithMeas>
+        <tacLacMax> 65535</tacLacMax>
+        <tacLacMin> 0</tacLacMin>
+    </workTypeCfg>
+    <cmmUeRedirectCfgActive>false </cmmUeRedirectCfgActive>
+    <cmmUeRedirectCfg>
+        <rejCause> 16</rejCause>
+        <redirectItem itemCnt = "0">
+        </redirectItem>
+    </cmmUeRedirectCfg>
+    <blkUeRedirectCfgActive>false </blkUeRedirectCfgActive>
+    <blkUeRedirectCfg>
+        <rejCause> 13</rejCause>
+        <redirectItem itemCnt = "0">
+        </redirectItem>
+    </blkUeRedirectCfg>
+    <whiteUeRedirectCfgActive>true </whiteUeRedirectCfgActive>
+    <whiteUeRedirectCfg>
+        <rejCause> 16</rejCause>
+        <redirectItem itemCnt = "3">
+            <item>
+                <mcc> 510</mcc>
+                <mnc> 10</mnc>
+                <rat>REDIRECT_WCDMA</rat>
+                <band> 0</band>
+                <fcn> 10638</fcn>
+            </item>
+            <item>
+                <mcc> 0</mcc>
+                <mnc> 0</mnc>
+                <rat>REDIRECT_WCDMA</rat>
+                <band> 1</band>
+                <fcn> 0</fcn>
+            </item>
+            <item>
+                <mcc> 0</mcc>
+                <mnc> 0</mnc>
+                <rat>REDIRECT_WCDMA</rat>
+                <band> 0</band>
+                <fcn> 0</fcn>
+            </item>
+        </redirectItem>
+    </whiteUeRedirectCfg>
+    <loopFcnCfgEn>false </loopFcnCfgEn>
+    <loopFcnCfg>
+        <loopPeriodSecCnt> 0</loopPeriodSecCnt>
+        <item itemCnt = "0">
+        </item>
+    </loopFcnCfg>
+</content>

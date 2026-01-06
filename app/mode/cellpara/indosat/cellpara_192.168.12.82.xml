@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding = 'UTF-8' standalone = 'no' ?>
+<content>
+    <rxGain> 65</rxGain>
+    <txPwr> 60</txPwr>
+    <cell itemCnt = "1">
+        <item>
+            <arfcnList>
+                <arfcn itemCnt = "1"> 3</arfcn>
+            </arfcnList>
+            <mcc> 510</mcc>
+            <mnc> 10</mnc>
+            <lai> 241</lai>
+            <sib3CellId> 34</sib3CellId>
+            <bsic> 40</bsic>
+            <cro> 63</cro>
+            <rxLevAccMin> 0</rxLevAccMin>
+            <reselctHyst> 0</reselctHyst>
+            <nbFreq> 37</nbFreq>
+            <dummyGprsSiDisable>true</dummyGprsSiDisable>
+        </item>
+    </cell>
+</content>

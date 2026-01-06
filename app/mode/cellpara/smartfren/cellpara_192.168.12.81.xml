@@ -1,0 +1,148 @@
+<?xml version='1.0' encoding = 'UTF-8' standalone = 'no' ?>
+<content>
+    <band> 40</band>
+    <erfcn> 38750</erfcn>
+    <pci> 344</pci>
+    <bw5MhzEn>false </bw5MhzEn>
+    <rxGain> 45</rxGain>
+    <txPwrLevel> 5</txPwrLevel>
+    <listenErfcn> 38750</listenErfcn>
+    <listenPci> 0</listenPci>
+    <publicTac> 0</publicTac>
+    <mcc> 510</mcc>
+    <mnc> 10</mnc>
+    <tac> 115</tac>
+    <cellId> 116601</cellId>
+    <tddSa> 2</tddSa>
+    <tddSfp> 7</tddSfp>
+    <gpsSynDisable>true </gpsSynDisable>
+    <qRxLevMin> -70</qRxLevMin>
+    <prachRootSeqIdx> 22</prachRootSeqIdx>
+    <prachCfgIdx> 1</prachCfgIdx>
+    <prachZeroZoneCfg> 1</prachZeroZoneCfg>
+    <prachFreqOff> 2</prachFreqOff>
+    <pdschRefSigPwr> 20</pdschRefSigPwr>
+    <ulTxPwrMax> 23</ulTxPwrMax>
+    <pdcchPwr> 2</pdcchPwr>
+    <synMode> 2</synMode>
+    <cellOnIfSynFail>true </cellOnIfSynFail>
+    <gpsFrameOffsetInNs> 2</gpsFrameOffsetInNs>
+    <mcc1> 0</mcc1>
+    <mnc1> 0</mnc1>
+    <mcc2> 0</mcc2>
+    <mnc2> 0</mnc2>
+    <sib3Enable>false </sib3Enable>
+    <sib3>
+        <cmmInfo>
+            <qHyst>Q_HYST_DB0</qHyst>
+            <speedStateParsPresent>false </speedStateParsPresent>
+            <speedStatePars>
+                <mobState>
+                    <tEvalution>T_EVALUTION_S_180</tEvalution>
+                    <tHystNomal>T_HYSTNOMAL_S_240</tHystNomal>
+                    <nCellChgMed> 1</nCellChgMed>
+                    <nCellChgHi> 16</nCellChgHi>
+                </mobState>
+                <qHystMed>QHYST_SF_MEDIUM_DB_6</qHystMed>
+                <qHystHigh>QHYST_SF_HIGH_DB0</qHystHigh>
+            </speedStatePars>
+        </cmmInfo>
+        <servingFreq>
+            <sNonIntraSearhPresent>true </sNonIntraSearhPresent>
+            <sNonIntraSearh> 0</sNonIntraSearh>
+            <threashLow> 5</threashLow>
+            <priority> 7</priority>
+        </servingFreq>
+        <intraFreq>
+            <qRxLevMin> -70</qRxLevMin>
+            <pMaxPresent>true </pMaxPresent>
+            <pMax> 23</pMax>
+            <intraSearchThreshPresent>true </intraSearchThreshPresent>
+            <intraSearchThresh> 3</intraSearchThresh>
+            <allowdBwPresent>true </allowdBwPresent>
+            <allowdBw>LTE_DL_BW_N100</allowdBw>
+            <presenceAntPort1>true </presenceAntPort1>
+            <nbCellCfg>NB_CELL_NO_MBSFN</nbCellCfg>
+            <tReselectionEUtra> 2</tReselectionEUtra>
+            <tReselctEUtraSfPresent>false </tReselctEUtraSfPresent>
+            <tReselctEUtraSf>
+                <med>SPEED_SCAL_FACTOR_SF_0D25</med>
+                <high>SPEED_SCAL_FACTOR_SF_1D0</high>
+            </tReselctEUtraSf>
+        </intraFreq>
+    </sib3>
+    <sib4Enable>false </sib4Enable>
+    <sib4>
+        <intraCell itemCnt = "0">
+        </intraCell>
+        <intraBlackCell itemCnt = "0">
+        </intraBlackCell>
+        <csgCellRangPresent>false </csgCellRangPresent>
+        <csgCellRang>
+            <start> 0</start>
+            <rangPresent>false </rangPresent>
+            <range>PHY_CELL_ID_RANGE_4</range>
+        </csgCellRang>
+    </sib4>
+    <sib5Enable>true </sib5Enable>
+    <sib5>
+        <interFreq itemCnt = "1">
+            <item>
+                <dlFreq> 38950</dlFreq>
+                <qRxLevMin> -60</qRxLevMin>
+                <pMaxPresent>false </pMaxPresent>
+                <pMax> 0</pMax>
+                <tReselectionEUtra> 1</tReselectionEUtra>
+                <tReselctEUtraSfPresent>false </tReselctEUtraSfPresent>
+                <tReselctEUtraSf>
+                    <med>SPEED_SCAL_FACTOR_SF_0D25</med>
+                    <high>SPEED_SCAL_FACTOR_SF_1D0</high>
+                </tReselctEUtraSf>
+                <threshxHigh> 11</threshxHigh>
+                <threshxLow> 11</threshxLow>
+                <allowdBw>LTE_DL_BW_N100</allowdBw>
+                <presenceAntPort1>false </presenceAntPort1>
+                <priorityPresent>true </priorityPresent>
+                <priority> 7</priority>
+                <nCellCfg>NB_CELL_NO_MBSFN</nCellCfg>
+                <qOffSetFreq>Q_OFF_RANGE_DB_0</qOffSetFreq>
+                <interCell itemCnt = "0">
+                </interCell>
+                <interBlackCell itemCnt = "0">
+                </interBlackCell>
+                <qRualMinr9Present>false </qRualMinr9Present>
+                <qRualMinr9> 0</qRualMinr9>
+                <threshxQr9Present>false </threshxQr9Present>
+                <threshxQr9>
+                    <highQr9> 0</highQr9>
+                    <lowQr9> 0</lowQr9>
+                </threshxQr9>
+            </item>
+        </interFreq>
+    </sib5>
+    <sib6Enable>false </sib6Enable>
+    <sib6>
+        <utraFdd itemCnt = "0">
+        </utraFdd>
+        <utraTdd itemCnt = "0">
+        </utraTdd>
+        <tReselectionUtra> 0</tReselectionUtra>
+        <tReselctUtraSfPresent>false </tReselctUtraSfPresent>
+        <tReselctUtraSf>
+            <med>SPEED_SCAL_FACTOR_SF_0D25</med>
+            <high>SPEED_SCAL_FACTOR_SF_1D0</high>
+        </tReselctUtraSf>
+    </sib6>
+    <sib7Enable>false </sib7Enable>
+    <sib7>
+        <tReselectionGeran> 0</tReselectionGeran>
+        <tReselctGeranSfPresent>false </tReselctGeranSfPresent>
+        <tReselctGeranSf>
+            <med>SPEED_SCAL_FACTOR_SF_0D25</med>
+            <high>SPEED_SCAL_FACTOR_SF_1D0</high>
+        </tReselctGeranSf>
+        <geran itemCnt = "0">
+        </geran>
+    </sib7>
+</content>
+
