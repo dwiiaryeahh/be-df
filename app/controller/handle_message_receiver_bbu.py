@@ -4,13 +4,10 @@ import time
 import re
 import os
 
-import asyncio
-
 from app.db.database import SessionLocal, engine
 from app.db import models
 from app.db.models import Heartbeat as HeartbeatModel, Crawling as CrawlingModel
 from app.service.services import insert_sniffer_nmmcfg, reset_nmmcfg
-from app.ws.manager import ws_manager
 from app.ws import runtime
 
 # pastikan table ada (aman walau dipanggil berulang)
@@ -76,20 +73,8 @@ def RespUdp(message, addr):
             )
             db.commit()
 
-            # broadcast realtime ke websocket
-            payload = {
-                "source_ip": source_ip,
-                "data": {
-                    "STATE": STATE,
-                    "TEMP": TEMP,
-                    "MODE": MODE,
-                    "CH": CH,
-                    "timestamp": date_now,
-                }
-            }
-
-            if runtime.main_loop:
-                asyncio.run_coroutine_threadsafe(ws_manager.broadcast(payload), runtime.main_loop)
+            # Note: Heartbeat broadcasts ditangani oleh /ws/device endpoint
+            # yang mengirim snapshot semua devices setiap 2 detik (format baru)
 
         elif GetCellParaRsp in message:
             save_xml_file(message, source_ip, 'cellpara', "(CellParaRsp)")
@@ -163,8 +148,6 @@ def RespUdp(message, addr):
                     insert_sniffer_nmmcfg(
                         db=db,
                         ip=source_ip,
-                        msg=message,
-                        status=start,
                         arfcn=earfcn_value,
                         operator=prov["operator"],
                         band=prov["band"],

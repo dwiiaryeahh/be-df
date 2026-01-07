@@ -26,8 +26,6 @@ class NmmCfg(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     ip = Column(String, nullable=True)
-    msg = Column(String, nullable=True)
-    status = Column(Integer, default=0)
     time = Column(String, nullable=True)
     arfcn = Column(Integer)
     operator = Column(String, nullable=True)
