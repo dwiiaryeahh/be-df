@@ -112,11 +112,11 @@ def heartbeat_snapshot(db: Session) -> dict:
     
     for r in rows:
         data.append({
-            "IP": r.source_ip,
-            "STATE": r.state,
-            "TEMP": r.temp,
-            "MODE": r.mode,
-            "CH": r.ch,
+            "ip": r.source_ip,
+            "state": r.state,
+            "temp": r.temp,
+            "mode": r.mode,
+            "ch": r.ch,
             "timestamp": r.timestamp,
         })
     

@@ -59,33 +59,7 @@ def get_summary(db: Session = Depends(get_db)):
 # -----------------------------------
 @router.websocket("/ws/device")
 async def ws_device(websocket: WebSocket):
-    """
-    WebSocket real-time untuk heartbeat monitoring
-    
-    Response format:
-    {
-        "status": "success",
-        "last_checked": "2026-01-07 16:39:10",
-        "data": [
-            {
-                "IP": "192.168.12.81",
-                "STATE": "ONLINE",
-                "TEMP": "43",
-                "MODE": "TDD-LTE",
-                "CH": "CH-01",
-                "timestamp": "1234567890.123"
-            },
-            {
-                "IP": "192.168.12.82",
-                "STATE": "ONLINE",
-                "TEMP": "45",
-                "MODE": "TDD-LTE",
-                "CH": "CH-01",
-                "timestamp": "1234567890.123"
-            }
-        ]
-    }
-    """
+
     await ws_manager.connect(websocket)
 
     db_gen = get_db()
