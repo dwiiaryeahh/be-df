@@ -20,9 +20,9 @@ def get_all_ips_db(db: Session) -> List[str]:
     return [r[0] for r in rows]
 
 def get_ips_with_sniffer_enabled(db: Session) -> List[str]:
-    """Ambil IP yang snif_status = 1 (ada modul sniffer / nyala)."""
+    """Ambil IP yang sniff_status = 1 (ada modul sniffer / nyala)."""
     rows = db.query(Heartbeat.source_ip).filter(
-        Heartbeat.snif_status == 1
+        Heartbeat.sniff_status == 1
     ).all()
     return [r[0] for r in rows]
 
@@ -405,16 +405,16 @@ def update_status_ip_sniffer(
         return False
 
     if update_type == "status":
-        heartbeat.snif_status = value
+        heartbeat.sniff_status = value
 
         if value == 0:
-            heartbeat.snif_scan = 0
+            heartbeat.sniff_scan = 0
 
     elif update_type == "scan":
-        heartbeat.snif_scan = value
+        heartbeat.sniff_scan = value
 
         if value == 1:
-            heartbeat.snif_status = 1
+            heartbeat.sniff_status = 1
 
     else:
         print(f"[ERROR] update_type tidak dikenal: {update_type}")
@@ -427,7 +427,7 @@ def update_status_ip_sniffer(
 
     print(
         f"[OK] Update sniffer IP {source_ip} | "
-        f"status={heartbeat.snif_status}, scan={heartbeat.snif_scan}"
+        f"status={heartbeat.sniff_status}, scan={heartbeat.sniff_scan}"
     )
     return True
 
