@@ -6,7 +6,7 @@ import os
 import time
 from datetime import datetime
 from sqlalchemy.orm import Session
-from app.db.models import Heartbeat, Crawling, Campaign
+from app.db.models import FreqOperator, Heartbeat, Crawling, Campaign, GPS, NmmCfg, Operator
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -17,6 +17,13 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 def get_all_ips_db(db: Session) -> List[str]:
     """Mengambil semua IP dari table heartbeat"""
     rows = db.query(Heartbeat.source_ip).all()
+    return [r[0] for r in rows]
+
+def get_ips_with_sniffer_enabled(db: Session) -> List[str]:
+    """Ambil IP yang snif_status = 1 (ada modul sniffer / nyala)."""
+    rows = db.query(Heartbeat.source_ip).filter(
+        Heartbeat.snif_status == 1
+    ).all()
     return [r[0] for r in rows]
 
 
@@ -118,16 +125,43 @@ def heartbeat_snapshot(db: Session) -> dict:
     }
 
 
+def crawling_snapshot(db: Session, campaign_id: int = None) -> dict:
+    query = db.query(Crawling)
+    
+    if campaign_id is not None:
+        query = query.filter(Crawling.campaign_id == campaign_id)
+    
+    rows = query.all()
+    data = {
+        r.imsi: {
+            "timestamp": r.timestamp,
+            "rsrp": r.rsrp,
+            "taType": r.taType,
+            "ulCqi": r.ulCqi,
+            "ulRssi": r.ulRssi,
+            "ip": r.ip,
+            "campaign_id": r.campaign_id,
+        }
+        for r in rows
+    }
+    return {
+        "status": "success",
+        "last_checked": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "campaign_id": campaign_id,
+        "data": data,
+    }
+
+
 # ==========================================
 # Heartbeat & Crawling Services
 # ==========================================
 
+def get_latest_campaign_id(db: Session) -> int:
+    campaign = db.query(Campaign).order_by(Campaign.id.desc()).first()
+    return campaign.id if campaign else None
+
+
 def upsert_heartbeat(db: Session, source_ip: str, state: str, temp: str, mode: str, ch: str, timestamp: str) -> Heartbeat:
-    """
-    Insert atau update heartbeat data berdasarkan source_ip.
-    
-    Jika source_ip sudah ada → UPDATE, jika tidak → INSERT
-    """
     row = db.query(Heartbeat).filter(Heartbeat.source_ip == source_ip).first()
     if row:
         row.state = state
@@ -150,13 +184,6 @@ def upsert_heartbeat(db: Session, source_ip: str, state: str, temp: str, mode: s
 
 
 def upsert_crawling(db: Session, timestamp: str, rsrp: str, taType: str, ulCqi: str, ulRssi: str, imsi: str, ip: str, campaign_id: int = None) -> Crawling:
-    """
-    Insert atau update crawling data.
-    
-    Logic:
-    - Jika campaign_id dan imsi sama dengan record yang sudah ada, maka UPDATE
-    - Selain itu, maka INSERT record baru
-    """
     # Cek apakah ada crawling dengan campaign_id dan imsi yang sama
     if campaign_id is not None:
         existing = db.query(Crawling).filter(
@@ -201,7 +228,6 @@ def upsert_crawling(db: Session, timestamp: str, rsrp: str, taType: str, ulCqi: 
 # ==========================================
 
 def list_campaigns(db: Session) -> Dict:
-    """List semua campaign dengan count crawling data"""
     campaigns = db.query(Campaign).all()
     
     result = []
@@ -229,7 +255,6 @@ def list_campaigns(db: Session) -> Dict:
 
 
 def create_campaign(db: Session, name: str, imsi: str, provider: str) -> Dict:
-    """Create campaign baru (seperti start scan)"""
     campaign = Campaign(
         name=name,
         imsi=imsi,
@@ -264,7 +289,6 @@ def create_campaign(db: Session, name: str, imsi: str, provider: str) -> Dict:
 
 
 def get_campaign_detail(db: Session, campaign_id: int) -> Dict:
-    """Get detail campaign dengan list crawling data"""
     campaign = db.query(Campaign).filter(Campaign.id == campaign_id).first()
     
     if not campaign:
@@ -308,7 +332,6 @@ def get_campaign_detail(db: Session, campaign_id: int) -> Dict:
 
 
 def update_campaign_status(db: Session, campaign_id: int, new_status: str) -> Dict:
-    """Update campaign status (misal: dari started -> stopped)"""
     campaign = db.query(Campaign).filter(Campaign.id == campaign_id).first()
     
     if not campaign:
@@ -342,3 +365,171 @@ def update_campaign_status(db: Session, campaign_id: int, new_status: str) -> Di
             "message": f"Failed to update campaign: {str(e)}",
             "data": None
         }
+
+def insert_or_update_gps(latitude: str, longitude: str, timestamp: str):
+    """Insert atau update data GPS di database"""
+    from app.db.database import SessionLocal
+    db = SessionLocal()
+    try:
+        gps_entry = db.query(GPS).first()
+        if gps_entry:
+            gps_entry.latitude = latitude
+            gps_entry.longitude = longitude
+            gps_entry.timestamp = timestamp
+        else:
+            gps_entry = GPS(
+                latitude=latitude,
+                longitude=longitude,
+                timestamp=timestamp
+            )
+            db.add(gps_entry)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        print(f"Error inserting/updating GPS data: {e}")
+    finally:
+        db.close()
+
+def update_status_ip_sniffer(
+    source_ip: str,
+    update_type: str,
+    value: int,
+    db: Session
+):
+    heartbeat = db.query(Heartbeat).filter(
+        Heartbeat.source_ip == source_ip
+    ).first()
+
+    if not heartbeat:
+        print(f"[WARN] Heartbeat dengan IP {source_ip} tidak ditemukan")
+        return False
+
+    if update_type == "status":
+        heartbeat.snif_status = value
+
+        if value == 0:
+            heartbeat.snif_scan = 0
+
+    elif update_type == "scan":
+        heartbeat.snif_scan = value
+
+        if value == 1:
+            heartbeat.snif_status = 1
+
+    else:
+        print(f"[ERROR] update_type tidak dikenal: {update_type}")
+        return False
+
+    heartbeat.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    db.commit()
+    db.refresh(heartbeat)
+
+    print(
+        f"[OK] Update sniffer IP {source_ip} | "
+        f"status={heartbeat.snif_status}, scan={heartbeat.snif_scan}"
+    )
+    return True
+
+def now_str():
+    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+def reset_nmmcfg(db: Session) -> int:
+    """
+    Hapus SEMUA data di tabel nmmcfg.
+    Return: jumlah row yang kehapus.
+    """
+    try:
+        deleted = db.query(NmmCfg).delete(synchronize_session=False)
+        db.commit()
+        print(f"[OK] nmmcfg reset. deleted={deleted}")
+        return deleted
+    except Exception as e:
+        db.rollback()
+        print("[ERROR] reset_nmmcfg:", e)
+        raise
+
+
+def insert_sniffer_nmmcfg(
+    db: Session,
+    ip: str = None,
+    msg: str = None,
+    status: int = 0,
+    time: str = None,
+    arfcn: int = None,
+    operator: str = None,
+    dl_freq: float = None,
+    ul_freq: float = None,
+    pci: str = None,
+    rsrp: str = None,
+    band: int = None,
+):
+    """
+    Insert 1 row ke tabel nmmcfg.
+    Field yang tidak ada -> None / default.
+    """
+    try:
+        row = NmmCfg(
+            ip=ip,
+            msg=msg,
+            status=0 if status is None else status,
+            time=now_str() if time is None else time,
+            arfcn=arfcn,
+            operator=operator,
+            dl_freq=dl_freq,
+            ul_freq=ul_freq,
+            pci=pci,
+            rsrp=rsrp,
+            band=band,
+        )
+        db.add(row)
+        db.commit()
+        db.refresh(row)
+        print("[OK] insert_sniffer_nmmcfg berhasil")
+        return row
+    except Exception as e:
+        db.rollback()
+        print("[ERROR] insert_sniffer_nmmcfg:", e)
+        raise
+
+
+def get_provider_data(db: Session, arfcn: int):
+    """
+    Ambil data provider berdasarkan arfcn dari tabel freq_operator + operator.brand.
+    Output dibuat mirip kebutuhan insert nmmcfg:
+      - brand -> operator
+      - band, dl_freq, ul_freq, mode
+    Kalau tidak ketemu -> semua None.
+    """
+    row = (
+        db.query(
+            FreqOperator.arfcn,
+            Operator.brand.label("brand"),
+            FreqOperator.band,
+            FreqOperator.dl_freq,
+            FreqOperator.ul_freq,
+            FreqOperator.mode,
+        )
+        .join(Operator, Operator.id == FreqOperator.provider_id, isouter=True)
+        .filter(FreqOperator.arfcn == arfcn)
+        .first()
+    )
+
+    if not row:
+        return {
+            "arfcn": arfcn,
+            "operator": None,
+            "band": None,
+            "dl_freq": None,
+            "ul_freq": None,
+            "mode": None,
+        }
+
+    return {
+        "arfcn": row.arfcn,
+        "operator": row.brand,   # mapping brand -> operator (kolom nmmcfg)
+        "band": row.band,
+        "dl_freq": row.dl_freq,
+        "ul_freq": row.ul_freq,
+        "mode": row.mode,
+    }

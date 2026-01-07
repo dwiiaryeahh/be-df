@@ -1,0 +1,77 @@
+[
+    {
+        "brand": "PSN",
+        "mcc": "510",
+        "mnc": "0"
+    },
+    {
+        "brand": "Indosat",
+        "mcc": "510",
+        "mnc": "1"
+    },
+    {
+        "brand": "StarOne",
+        "mcc": "510",
+        "mnc": "3"
+    },
+    {
+        "brand": "TelkomFlexi",
+        "mcc": "510",
+        "mnc": "7"
+    },
+    {
+        "brand": "AXIS",
+        "mcc": "510",
+        "mnc": "8"
+    },
+    {
+        "brand": "Smartfren",
+        "mcc": "510",
+        "mnc": "9"
+    },
+    {
+        "brand": "Telkomsel",
+        "mcc": "510",
+        "mnc": "10"
+    },
+    {
+        "brand": "XL",
+        "mcc": "510",
+        "mnc": "11"
+    },
+    {
+        "brand": "TELKOMMobile",
+        "mcc": "510",
+        "mnc": "20"
+    },
+    {
+        "brand": "IM3",
+        "mcc": "510",
+        "mnc": "21"
+    },
+    {
+        "brand": "Ceria",
+        "mcc": "510",
+        "mnc": "27"
+    },
+    {
+        "brand": "Smartfren",
+        "mcc": "510",
+        "mnc": "28"
+    },
+    {
+        "brand": "BOLT! Super 4G",
+        "mcc": "510",
+        "mnc": "88"
+    },
+    {
+        "brand": "3",
+        "mcc": "510",
+        "mnc": "89"
+    },
+    {
+        "brand": "Esia",
+        "mcc": "510",
+        "mnc": "99"
+    }
+]

@@ -1,0 +1,506 @@
+[
+    {
+        "arfcn": 100,
+        "band": 1,
+        "dl_freq": 2120.0,
+        "mode": "FDD-LTE",
+        "provider_id": 14,
+        "ul_freq": 1930.0
+    },
+    {
+        "arfcn": 326,
+        "band": 1,
+        "dl_freq": 2142.6,
+        "mode": "FDD-LTE",
+        "provider_id": 8,
+        "ul_freq": 1952.6
+    },
+    {
+        "arfcn": 350,
+        "band": 1,
+        "dl_freq": 2145.0,
+        "mode": "FDD-LTE",
+        "provider_id": 8,
+        "ul_freq": 1955.0
+    },
+    {
+        "arfcn": 500,
+        "band": 1,
+        "dl_freq": 2160.0,
+        "mode": "FDD-LTE",
+        "provider_id": 2,
+        "ul_freq": 1970.0
+    },
+    {
+        "arfcn": 525,
+        "band": 1,
+        "dl_freq": 2162.5,
+        "mode": "FDD-LTE",
+        "provider_id": 2,
+        "ul_freq": 1972.5
+    },
+    {
+        "arfcn": 1850,
+        "band": 3,
+        "dl_freq": 1870.0,
+        "mode": "FDD-LTE",
+        "provider_id": 7,
+        "ul_freq": 1775.0
+    },
+    {
+        "arfcn": 1625,
+        "band": 3,
+        "dl_freq": 1847.5,
+        "mode": "FDD-LTE",
+        "provider_id": 2,
+        "ul_freq": 1752.5
+    },
+    {
+        "arfcn": 1475,
+        "band": 3,
+        "dl_freq": 1832.5,
+        "mode": "FDD-LTE",
+        "provider_id": 14,
+        "ul_freq": 1737.5
+    },
+    {
+        "arfcn": 1325,
+        "band": 3,
+        "dl_freq": 1817.5,
+        "mode": "FDD-LTE",
+        "provider_id": 8,
+        "ul_freq": 1722.5
+    },
+    {
+        "arfcn": 1313,
+        "band": 3,
+        "dl_freq": 1816.3,
+        "mode": "FDD-LTE",
+        "provider_id": 8,
+        "ul_freq": 1721.3
+    },
+    {
+        "arfcn": 2450,
+        "band": 5,
+        "dl_freq": 874.0,
+        "mode": "FDD-LTE",
+        "provider_id": 6,
+        "ul_freq": 829.0
+    },
+    {
+        "arfcn": 3500,
+        "band": 8,
+        "dl_freq": 930.0,
+        "mode": "FDD-LTE",
+        "provider_id": 7,
+        "ul_freq": 885.0
+    },
+    {
+        "arfcn": 3673,
+        "band": 8,
+        "dl_freq": 947.3,
+        "mode": "FDD-LTE",
+        "provider_id": 2,
+        "ul_freq": 902.3
+    },
+    {
+        "arfcn": 3674,
+        "band": 8,
+        "dl_freq": 947.4,
+        "mode": "FDD-LTE",
+        "provider_id": 2,
+        "ul_freq": 902.4
+    },
+    {
+        "arfcn": 3676,
+        "band": 8,
+        "dl_freq": 947.6,
+        "mode": "FDD-LTE",
+        "provider_id": 2,
+        "ul_freq": 902.6
+    },
+    {
+        "arfcn": 3774,
+        "band": 8,
+        "dl_freq": 957.4,
+        "mode": "FDD-LTE",
+        "provider_id": 8,
+        "ul_freq": 912.4
+    },
+    {
+        "arfcn": 38750,
+        "band": 40,
+        "dl_freq": 2310.0,
+        "mode": "TDD-LTE",
+        "provider_id": 7,
+        "ul_freq": 2310.0
+    },
+    {
+        "arfcn": 38894,
+        "band": 40,
+        "dl_freq": 2324.4,
+        "mode": "TDD-LTE",
+        "provider_id": 7,
+        "ul_freq": 2324.4
+    },
+    {
+        "arfcn": 39194,
+        "band": 40,
+        "dl_freq": 2354.4,
+        "mode": "TDD-LTE",
+        "provider_id": 6,
+        "ul_freq": 2354.4
+    },
+    {
+        "arfcn": 251,
+        "band": 1,
+        "dl_freq": 2135.1,
+        "mode": "FDD-LTE",
+        "provider_id": 7,
+        "ul_freq": 1945.1
+    },
+    {
+        "arfcn": 39050,
+        "band": 40,
+        "dl_freq": 2340.0,
+        "mode": "TDD-LTE",
+        "provider_id": 6,
+        "ul_freq": 2340.0
+    },
+    {
+        "arfcn": 39250,
+        "band": 40,
+        "dl_freq": 2360.0,
+        "mode": "TDD-LTE",
+        "provider_id": 6,
+        "ul_freq": 2360.0
+    },
+    {
+        "arfcn": 39448,
+        "band": 40,
+        "dl_freq": 2379.8,
+        "mode": "TDD-LTE",
+        "provider_id": 6,
+        "ul_freq": 2379.8
+    },
+    {
+        "arfcn": 3013,
+        "band": 8,
+        "dl_freq": 942.6,
+        "mode": "WCDMA",
+        "provider_id": 2,
+        "ul_freq": 897.6
+    },
+    {
+        "arfcn": 10563,
+        "band": 1,
+        "dl_freq": 2112.6,
+        "mode": "WCDMA",
+        "provider_id": 14,
+        "ul_freq": 1922.6
+    },
+    {
+        "arfcn": 10633,
+        "band": 1,
+        "dl_freq": 2126.6,
+        "mode": "WCDMA",
+        "provider_id": 7,
+        "ul_freq": 1936.6
+    },
+    {
+        "arfcn": 10638,
+        "band": 1,
+        "dl_freq": 2127.6,
+        "mode": "WCDMA",
+        "provider_id": 7,
+        "ul_freq": 1937.6
+    },
+    {
+        "arfcn": 10688,
+        "band": 1,
+        "dl_freq": 2137.6,
+        "mode": "WCDMA",
+        "provider_id": 7,
+        "ul_freq": 1947.6
+    },
+    {
+        "arfcn": 10738,
+        "band": 1,
+        "dl_freq": 2147.6,
+        "mode": "WCDMA",
+        "provider_id": 8,
+        "ul_freq": 1957.6
+    },
+    {
+        "arfcn": 10763,
+        "band": 1,
+        "dl_freq": 2152.6,
+        "mode": "WCDMA",
+        "provider_id": 8,
+        "ul_freq": 1962.6
+    },
+    {
+        "arfcn": 10838,
+        "band": 1,
+        "dl_freq": 2167.6,
+        "mode": "WCDMA",
+        "provider_id": 2,
+        "ul_freq": 1977.6
+    },
+    {
+        "arfcn": 38948,
+        "band": 40,
+        "dl_freq": 2329.8,
+        "mode": "TDD-LTE",
+        "provider_id": 7,
+        "ul_freq": 2329.8
+    },
+    {
+        "arfcn": 3,
+        "band": 8,
+        "dl_freq": 935.6,
+        "mode": "GSM",
+        "provider_id": 7,
+        "ul_freq": 890.6
+    },
+    {
+        "arfcn": 78,
+        "band": 8,
+        "dl_freq": 950.6,
+        "mode": "GSM",
+        "provider_id": 2,
+        "ul_freq": 905.6
+    },
+    {
+        "arfcn": 512,
+        "band": 3,
+        "dl_freq": 1805.2,
+        "mode": "GSM",
+        "provider_id": 8,
+        "ul_freq": 1710.2
+    },
+    {
+        "arfcn": 376,
+        "band": 1,
+        "dl_freq": 2147.6,
+        "mode": "FDD-LTE",
+        "provider_id": 8,
+        "ul_freq": 1957.6
+    },
+    {
+        "arfcn": 75,
+        "band": 1,
+        "dl_freq": 2117.5,
+        "mode": "FDD-LTE",
+        "provider_id": 2,
+        "ul_freq": 1927.5
+    },
+    {
+        "arfcn": 475,
+        "band": 1,
+        "dl_freq": 2157.5,
+        "mode": "FDD-LTE",
+        "provider_id": 7,
+        "ul_freq": 1967.5
+    },
+    {
+        "arfcn": 325,
+        "band": 1,
+        "dl_freq": 2142.5,
+        "mode": "FDD-LTE",
+        "provider_id": 8,
+        "ul_freq": 1952.5
+    },
+    {
+        "arfcn": 200,
+        "band": 1,
+        "dl_freq": 2130.0,
+        "mode": "FDD-LTE",
+        "provider_id": 2,
+        "ul_freq": 1940.0
+    },
+    {
+        "arfcn": 3652,
+        "band": 8,
+        "dl_freq": 945.2,
+        "mode": "FDD-LTE",
+        "provider_id": 2,
+        "ul_freq": 900.2
+    },
+    {
+        "arfcn": 782,
+        "band": 3,
+        "dl_freq": 1859.2,
+        "mode": "GSM",
+        "provider_id": 7,
+        "ul_freq": 1764.2
+    },
+    {
+        "arfcn": 779,
+        "band": 3,
+        "dl_freq": 1858.6,
+        "mode": "GSM",
+        "provider_id": 7,
+        "ul_freq": 1763.6
+    },
+    {
+        "arfcn": 776,
+        "band": 3,
+        "dl_freq": 1858.0,
+        "mode": "GSM",
+        "provider_id": 7,
+        "ul_freq": 1763.0
+    },
+    {
+        "arfcn": 673,
+        "band": 3,
+        "dl_freq": 1837.4,
+        "mode": "GSM",
+        "provider_id": 14,
+        "ul_freq": 1742.4
+    },
+    {
+        "arfcn": 672,
+        "band": 3,
+        "dl_freq": 1837.2,
+        "mode": "GSM",
+        "provider_id": 14,
+        "ul_freq": 1742.2
+    },
+    {
+        "arfcn": 625,
+        "band": 3,
+        "dl_freq": 1827.8,
+        "mode": "GSM",
+        "provider_id": 14,
+        "ul_freq": 1732.8
+    },
+    {
+        "arfcn": 624,
+        "band": 3,
+        "dl_freq": 1827.6,
+        "mode": "GSM",
+        "provider_id": 14,
+        "ul_freq": 1732.6
+    },
+    {
+        "arfcn": 621,
+        "band": 3,
+        "dl_freq": 1827.0,
+        "mode": "GSM",
+        "provider_id": 8,
+        "ul_freq": 1732.0
+    },
+    {
+        "arfcn": 619,
+        "band": 3,
+        "dl_freq": 1826.6,
+        "mode": "GSM",
+        "provider_id": 8,
+        "ul_freq": 1731.6
+    },
+    {
+        "arfcn": 513,
+        "band": 3,
+        "dl_freq": 1805.4,
+        "mode": "GSM",
+        "provider_id": 8,
+        "ul_freq": 1710.4
+    },
+    {
+        "arfcn": 783,
+        "band": 3,
+        "dl_freq": 1859.4,
+        "mode": "GSM",
+        "provider_id": 7,
+        "ul_freq": 1764.4
+    },
+    {
+        "arfcn": 2,
+        "band": 8,
+        "dl_freq": 935.4,
+        "mode": "GSM",
+        "provider_id": 8,
+        "ul_freq": 890.4
+    },
+    {
+        "arfcn": 112,
+        "band": 8,
+        "dl_freq": 957.4,
+        "mode": "GSM",
+        "provider_id": 8,
+        "ul_freq": 912.4
+    },
+    {
+        "arfcn": 93,
+        "band": 8,
+        "dl_freq": 953.6,
+        "mode": "GSM",
+        "provider_id": 8,
+        "ul_freq": 908.6
+    },
+    {
+        "arfcn": 91,
+        "band": 8,
+        "dl_freq": 953.2,
+        "mode": "GSM",
+        "provider_id": 8,
+        "ul_freq": 908.2
+    },
+    {
+        "arfcn": 80,
+        "band": 8,
+        "dl_freq": 951.0,
+        "mode": "GSM",
+        "provider_id": 2,
+        "ul_freq": 906.0
+    },
+    {
+        "arfcn": 76,
+        "band": 8,
+        "dl_freq": 950.2,
+        "mode": "GSM",
+        "provider_id": 2,
+        "ul_freq": 905.2
+    },
+    {
+        "arfcn": 27,
+        "band": 8,
+        "dl_freq": 940.4,
+        "mode": "GSM",
+        "provider_id": 2,
+        "ul_freq": 895.4
+    },
+    {
+        "arfcn": 26,
+        "band": 8,
+        "dl_freq": 940.2,
+        "mode": "GSM",
+        "provider_id": 2,
+        "ul_freq": 895.2
+    },
+    {
+        "arfcn": 7,
+        "band": 8,
+        "dl_freq": 936.4,
+        "mode": "GSM",
+        "provider_id": 7,
+        "ul_freq": 891.4
+    },
+    {
+        "arfcn": 6,
+        "band": 8,
+        "dl_freq": 936.2,
+        "mode": "GSM",
+        "provider_id": 7,
+        "ul_freq": 891.2
+    },
+    {
+        "arfcn": 114,
+        "band": 8,
+        "dl_freq": 957.8,
+        "mode": "GSM",
+        "provider_id": 8,
+        "ul_freq": 912.8
+    }
+]

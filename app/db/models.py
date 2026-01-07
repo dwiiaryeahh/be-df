@@ -1,5 +1,5 @@
 # app/db/models.py
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, func
+from sqlalchemy import Boolean, Column, Float, Integer, String, DateTime, ForeignKey, func
 from sqlalchemy.orm import relationship
 from .database import Base
 
@@ -12,9 +12,62 @@ class Heartbeat(Base):
     temp = Column(String, nullable=False)
     mode = Column(String, nullable=False)
     ch = Column(String, nullable=False)
-
+    snif_status = Column(Integer, nullable=True, default=1) 
+    # 0 Mati (tidak ada modul sniff) 
+    # 1 Nyala (ada modul sniff)
+    snif_scan = Column(Integer, nullable=True, default=1) 
+    # -1 Mati (selesai sniff) 
+    # 1 Nyala (lagi sniff) 
+    # 0 (tidak ada modul sniff)
     timestamp = Column(String, nullable=False)
 
+class NmmCfg(Base):
+    __tablename__ = "nmmcfg"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    ip = Column(String, nullable=True)
+    msg = Column(String, nullable=True)
+    status = Column(Integer, default=0)
+    time = Column(String, nullable=True)
+    arfcn = Column(Integer)
+    operator = Column(String, nullable=True)
+    dl_freq = Column(Float, default=0.0, nullable=True)
+    ul_freq = Column(Float, default=0.0, nullable=True)
+    pci = Column(String, nullable=True)
+    rsrp = Column(String, nullable=True)
+    band = Column(Integer, nullable=True)
+
+class Operator(Base):
+    __tablename__ = "operator"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    mcc = Column(String, nullable=True)
+    mnc = Column(String, nullable=True)
+    brand = Column(String, nullable=True)
+
+    # relasi ke freq_operator
+    freqs = relationship(
+        "FreqOperator",
+        back_populates="operator",
+        cascade="all, delete-orphan"
+    )
+
+class FreqOperator(Base):
+    __tablename__ = "freq_operator"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    arfcn = Column(Integer, nullable=True)
+    provider_id = Column(
+        Integer,
+        ForeignKey("operator.id", ondelete="CASCADE", onupdate="CASCADE"),
+        nullable=True
+    )
+    band = Column(Integer, nullable=True)
+    dl_freq = Column(Float, nullable=True, default=0.0)
+    ul_freq = Column(Float, nullable=True, default=0.0)
+    mode = Column(String, nullable=True)
+
+    operator = relationship("Operator", back_populates="freqs")
 
 class Campaign(Base):
     __tablename__ = "campaign"
@@ -45,3 +98,20 @@ class Crawling(Base):
 
     campaign_id = Column(Integer, ForeignKey("campaign.id"), nullable=True)
     campaign = relationship("Campaign", back_populates="crawlings")
+
+class GPS(Base):
+    __tablename__ = "gps"
+
+    id = Column(Integer, primary_key=True, index=True)
+    latitude = Column(String, nullable=False)
+    longitude = Column(String, nullable=False)
+    timestamp = Column(String, nullable=False)
+
+class License(Base):
+    __tablename__ = "license"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    number = Column(String, unique=True, nullable=False)
+    status = Column(String, nullable=False)
+    expires_at = Column(DateTime(timezone=True), nullable=False)

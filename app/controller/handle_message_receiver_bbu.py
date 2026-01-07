@@ -1,5 +1,5 @@
 # app/controller/handle_message_receiver_bbu.py
-from app.config.utils import HeartBeat, GetCellParaRsp, GetAppCfgExtRsp, OneUeInfoIndi
+from app.config.utils import HeartBeat, GetCellParaRsp, GetAppCfgExtRsp, OneUeInfoIndi, GPSInfoIndi
 import time
 import re
 import os
@@ -9,6 +9,7 @@ import asyncio
 from app.db.database import SessionLocal, engine
 from app.db import models
 from app.db.models import Heartbeat as HeartbeatModel, Crawling as CrawlingModel
+from app.service.services import insert_sniffer_nmmcfg, reset_nmmcfg
 from app.ws.manager import ws_manager
 from app.ws import runtime
 
@@ -45,7 +46,13 @@ def RespUdp(message, addr):
 
     date_now = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 
-    from app.service.services import upsert_heartbeat, upsert_crawling
+    from app.service.services import (
+        upsert_heartbeat, 
+        upsert_crawling, 
+        insert_or_update_gps, 
+        update_status_ip_sniffer,
+        get_provider_data
+    )
 
     db = SessionLocal()
     try:
@@ -97,6 +104,9 @@ def RespUdp(message, addr):
             ulRssi = message.split("ulRssi[")[1].split("]")[0]
             imsi = message.split("imsi[")[1].split("]")[0]
 
+            from app.service.services import get_latest_campaign_id
+            campaign_id = get_latest_campaign_id(db)
+
             upsert_crawling(
                 db=db,
                 timestamp=date_now,
@@ -106,9 +116,81 @@ def RespUdp(message, addr):
                 ulRssi=ulRssi,
                 imsi=imsi,
                 ip=source_ip,
-                campaign_id=None,
+                campaign_id=campaign_id,
             )
             db.commit()
+
+            payload = {
+                "imsi": imsi,
+                "campaign_id": campaign_id,
+                "data": {
+                    "timestamp": date_now,
+                    "rsrp": rsrp,
+                    "taType": taType,
+                    "ulCqi": ulCqi,
+                    "ulRssi": ulRssi,
+                    "ip": source_ip,
+                    "campaign_id": campaign_id,
+                }
+            }
+
+            if runtime.main_loop:
+                asyncio.run_coroutine_threadsafe(ws_manager.broadcast(payload), runtime.main_loop)
+
+        elif GPSInfoIndi in message:
+            latitude = message.split("latitude[")[1].split("]")[0]
+            longitude = message.split("longitude[")[1].split("]")[0]
+            date = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+            print("GPS Info - Latitude:", latitude, "Longitude:", longitude, "Date:", date)
+            insert_or_update_gps(latitude, longitude, date)
+
+        elif "SnifferRsltIndi" in message:
+            start = 0
+            stop = 2
+
+            if "[-1]" not in message:
+                pattern = r'erfcn\[(\d+)\],pci\[(\d+)\],rsrp\[(-?\d+)\]'
+                match = re.search(pattern, message)
+
+                print("msgggg", message)
+                if match:
+                    earfcn_value = int(match.group(1))
+                    pci_value = match.group(2)
+                    rsrp_value = match.group(3)
+
+                    prov = get_provider_data(db, earfcn_value)
+
+                    insert_sniffer_nmmcfg(
+                        db=db,
+                        ip=source_ip,
+                        msg=message,
+                        status=start,
+                        arfcn=earfcn_value,
+                        operator=prov["operator"],
+                        band=prov["band"],
+                        dl_freq=prov["dl_freq"],
+                        ul_freq=prov["ul_freq"],
+                        pci=str(pci_value) if pci_value else None,
+                        rsrp=str(rsrp_value) if rsrp_value else None,
+                    )
+
+                    update_status_ip_sniffer(source_ip, 'scan', 1, db)
+
+            else:
+                print("masuk -1 nih<<<<<<<", message)
+                time.sleep(1)
+                update_status_ip_sniffer(source_ip, 'scan', -1, db)
+
+
+        elif "StartSniffer" in message:
+            RESULT = message.split("RESULT[")[1].split("]")[0]
+            print("RESULT SNIF", RESULT)
+            reset_nmmcfg(db)
+            update_status_ip_sniffer(source_ip, 'scan', 1, db)
+
+            if RESULT == "PARA_ERROR":
+                # PARA_ERROR menandakan modul sniffer tidak ada
+                update_status_ip_sniffer(source_ip, 'status', 0, db)
 
         else:
             print(" ")

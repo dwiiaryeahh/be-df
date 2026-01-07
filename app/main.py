@@ -9,8 +9,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
 from app.controller import client_udp
-from app.db.database import engine
+from app.db.database import engine, SessionLocal
 from app.db import models
+from app.db.seeds import seed_all
 from app.ws import runtime
 from app.api.routes import device, crawling, xml, campaign
 
@@ -56,6 +57,13 @@ class MyApp:
 
     def init_db(self):
         models.Base.metadata.create_all(bind=engine)
+        
+        # Auto-seed operators dan freq_operators
+        db = SessionLocal()
+        try:
+            seed_all(db)
+        finally:
+            db.close()
 
     def start_fastapi_server(self):
         uvicorn.run(app, host="0.0.0.0", port=8888)
