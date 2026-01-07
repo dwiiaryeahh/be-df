@@ -40,6 +40,5 @@ status_variabel = {"SNIFF" : 0}
 
 token_bbu = "e3b0c44298fc1c149afbf4c8996fb924"
 
-HEARTBEAT_JSON = "heartbeat.json"
 CRAWLING_JSON = "crawling.json"
 GPS_JSON = "gps.json"
