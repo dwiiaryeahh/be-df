@@ -105,23 +105,6 @@ def RespUdp(message, addr):
             )
             db.commit()
 
-            payload = {
-                "imsi": imsi,
-                "campaign_id": campaign_id,
-                "data": {
-                    "timestamp": date_now,
-                    "rsrp": rsrp,
-                    "taType": taType,
-                    "ulCqi": ulCqi,
-                    "ulRssi": ulRssi,
-                    "ip": source_ip,
-                    "campaign_id": campaign_id,
-                }
-            }
-
-            if runtime.main_loop:
-                asyncio.run_coroutine_threadsafe(ws_manager.broadcast(payload), runtime.main_loop)
-
         elif GPSInfoIndi in message:
             latitude = message.split("latitude[")[1].split("]")[0]
             longitude = message.split("longitude[")[1].split("]")[0]

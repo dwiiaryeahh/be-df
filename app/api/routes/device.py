@@ -8,7 +8,7 @@ import time
 import asyncio
 
 from app.db.database import get_db
-from app.db.models import Heartbeat
+from app.db.models import Heartbeat, License
 from app.db.schemas import HeartbeatResponse
 from app.service.services import (
     heartbeat_snapshot,
@@ -55,6 +55,31 @@ def get_summary(db: Session = Depends(get_db)):
 
 
 # -----------------------------------
+# HTTP ENDPOINT /license
+# -----------------------------------
+@router.get("/license", tags=["License"])
+def get_licenses(db: Session = Depends(get_db)):
+    licenses = db.query(License).all()
+    
+    data = [
+        {
+            "id": lic.id,
+            "name": lic.name,
+            "number": lic.number,
+            "status": lic.status,
+            "expires_at": lic.expires_at.isoformat() if lic.expires_at else None
+        }
+        for lic in licenses
+    ]
+    
+    return {
+        "status": "success",
+        "last_checked": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "data": data
+    }
+
+
+# -----------------------------------
 # WEBSOCKET REALTIME /ws/device
 # -----------------------------------
 @router.websocket("/ws/device")
@@ -66,10 +91,8 @@ async def ws_device(websocket: WebSocket):
     db = next(db_gen)
 
     try:
-        # Send initial snapshot
         await websocket.send_json(heartbeat_snapshot(db))
         
-        # Send updates every 2 seconds
         while True:
             try:
                 await asyncio.wait_for(websocket.receive_text(), timeout=2.0)
@@ -94,8 +117,16 @@ async def ws_data_imsi(websocket: WebSocket, campaign_id: int = None):
 
     try:
         await websocket.send_json(crawling_snapshot(db, campaign_id=campaign_id))
+        
         while True:
-            await websocket.receive_text()  # keepalive (client bisa ping)
+            try:
+                await asyncio.wait_for(websocket.receive_text(), timeout=2.0)
+            except asyncio.TimeoutError:
+                pass
+            
+            snapshot = crawling_snapshot(db, campaign_id=campaign_id)
+            await websocket.send_json(snapshot)
+            
     except WebSocketDisconnect:
         await ws_manager.disconnect(websocket)
     finally:

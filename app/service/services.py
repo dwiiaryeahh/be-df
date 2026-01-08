@@ -134,8 +134,11 @@ def crawling_snapshot(db: Session, campaign_id: int = None) -> dict:
         query = query.filter(Crawling.campaign_id == campaign_id)
     
     rows = query.all()
-    data = {
-        r.imsi: {
+    data = []
+    
+    for r in rows:
+        data.append({
+            "IMSI": r.imsi,
             "timestamp": r.timestamp,
             "rsrp": r.rsrp,
             "taType": r.taType,
@@ -143,9 +146,8 @@ def crawling_snapshot(db: Session, campaign_id: int = None) -> dict:
             "ulRssi": r.ulRssi,
             "ip": r.ip,
             "campaign_id": r.campaign_id,
-        }
-        for r in rows
-    }
+        })
+    
     return {
         "status": "success",
         "last_checked": time.strftime("%Y-%m-%d %H:%M:%S"),

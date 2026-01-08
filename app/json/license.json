@@ -1,0 +1,44 @@
+[
+    {
+        "name": "Mission Dashboard",
+        "number": "0001-0000-0000-0000",
+        "status": "active",
+        "expires_at": "2026-12-31"
+    },
+    {
+        "name": "Mission Provider Selector",
+        "number": "0002-0000-0000-0000",
+        "status": "active",
+        "expires_at": "2026-12-31"
+    },
+    {
+        "name": "Mission Targeting Panel",
+        "number": "0003-0000-0000-0000",
+        "status": "active",
+        "expires_at": "2026-12-31"
+    },
+    {
+        "name": "Mission Finding Panel",
+        "number": "0004-0000-0000-0000",
+        "status": "inactive",
+        "expires_at": "2026-12-31"
+    },
+    {
+        "name": "Mission Details Overview",
+        "number": "0005-0000-0000-0000",
+        "status": "active",
+        "expires_at": "2026-12-31"
+    },
+    {
+        "name": "Band Scanner",
+        "number": "0006-0000-0000-0000",
+        "status": "active",
+        "expires_at": "2026-12-31"
+    },
+    {
+        "name": "Data Export",
+        "number": "0007-0000-0000-0000",
+        "status": "active",
+        "expires_at": "2026-12-31"
+    }
+]

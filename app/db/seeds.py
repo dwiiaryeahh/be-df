@@ -4,8 +4,9 @@ Database seeds - Auto-populate data ke database
 """
 import json
 import os
+from datetime import datetime
 from sqlalchemy.orm import Session
-from app.db.models import Operator, FreqOperator
+from app.db.models import Operator, FreqOperator, License
 
 
 def load_operator_data():
@@ -25,6 +26,18 @@ def load_freq_operator_data():
     json_file = os.path.join(
         os.path.dirname(__file__),
         '../json/freq_operator.json'
+    )
+    if os.path.exists(json_file):
+        with open(json_file, 'r') as f:
+            return json.load(f)
+    return []
+
+
+def load_license_data():
+    """Load license data dari license.json"""
+    json_file = os.path.join(
+        os.path.dirname(__file__),
+        '../json/license.json'
     )
     if os.path.exists(json_file):
         with open(json_file, 'r') as f:
@@ -109,6 +122,50 @@ def seed_freq_operators(db: Session):
     return count
 
 
+def seed_licenses(db: Session):
+    """
+    Seed license data ke database
+    Jika sudah ada (berdasarkan license number), skip
+    """
+    data = load_license_data()
+    
+    if not data:
+        print("⚠ license.json tidak ditemukan atau kosong")
+        return 0
+    
+    count = 0
+    for item in data:
+        # Check apakah sudah ada dengan number yang sama
+        existing = db.query(License).filter(
+            License.number == item.get('number')
+        ).first()
+        
+        if not existing:
+            # Parse expires_at (format: YYYY-MM-DD)
+            expires_str = item.get('expires_at', '')
+            try:
+                expires_at = datetime.strptime(expires_str, '%Y-%m-%d')
+            except (ValueError, TypeError):
+                expires_at = datetime.now()
+            
+            license_obj = License(
+                name=item.get('name'),
+                number=item.get('number'),
+                status=item.get('status'),
+                expires_at=expires_at
+            )
+            db.add(license_obj)
+            count += 1
+    
+    if count > 0:
+        db.commit()
+        print(f"✓ Seeded {count} licenses")
+    else:
+        print("ℹ No new licenses to seed (all exist)")
+    
+    return count
+
+
 def seed_all(db: Session):
     """
     Run semua seeds
@@ -119,6 +176,7 @@ def seed_all(db: Session):
     
     seed_operators(db)
     seed_freq_operators(db)
+    seed_licenses(db)
     
     print("="*60)
     print("Database Seeding Complete")
