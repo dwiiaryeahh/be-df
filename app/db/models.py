@@ -12,6 +12,10 @@ class Heartbeat(Base):
     temp = Column(String, nullable=False)
     mode = Column(String, nullable=False)
     ch = Column(String, nullable=False)
+    band = Column(String, nullable=False)
+    arfcn = Column(String, nullable=True)
+    mcc = Column(String, nullable=True)
+    mnc = Column(String, nullable=True)
     sniff_status = Column(Integer, nullable=True, default=1) 
     # 0 Mati (tidak ada modul sniff) 
     # 1 Nyala (ada modul sniff)
@@ -93,6 +97,9 @@ class Crawling(Base):
 
     imsi = Column(String, nullable=False, index=True)
     ip = Column(String, nullable=False, index=True)
+    
+    lat = Column(String, nullable=True)
+    long = Column(String, nullable=True)
 
     campaign_id = Column(Integer, ForeignKey("campaign.id"), nullable=True)
     campaign = relationship("Campaign", back_populates="crawlings")

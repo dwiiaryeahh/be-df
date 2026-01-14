@@ -13,7 +13,7 @@ from app.db.database import engine, SessionLocal
 from app.db import models
 from app.db.seeds import seed_all
 from app.ws import runtime
-from app.api.routes import device, crawling, xml, campaign
+from app.api.routes import crawling, websocket, xml, campaign, license
 
 # Create FastAPI app
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -44,11 +44,11 @@ app.add_middleware(
 def get_spotlight():
     return FileResponse(DOCS_PATH)
 
-# Include all routers
-app.include_router(device.router)
+app.include_router(websocket.router)
 app.include_router(campaign.router)
 app.include_router(crawling.router)
 app.include_router(xml.router)
+app.include_router(license.router)
 
 
 class MyApp:

@@ -11,11 +11,15 @@ PortUdpClient = 7001
 HeartBeat = "HeartBeat"
 GPSInfoIndi = "GPSInfoIndi"
 GetCellParaRsp = "GetCellParaRsp"
+SetCellPara = "SetCellPara"
 GetAppCfgExtRsp = "GetAppCfgExtRsp"
+SetAppCfgExt = "SetAppCfgExt"
 GetNmmCfg = "GetNmmCfgRsp"
 StartCell = "StartCell"
 StopCell = "StopCell"
 OneUeInfoIndi = "OneUeInfoIndi"
+SetBlackList = "SetBlackList" # + " " + IMSI
+SetUlPcPara = "SetUlPcPara 40 30 1"
 
 db_setting = "setting.db"
 db_heartbeat = "heartbeat.db"

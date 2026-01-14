@@ -3,26 +3,25 @@ Campaign endpoints - Campaign management (List, Create, Detail, Update)
 Tags: Campaign
 """
 from fastapi import APIRouter, HTTPException, Depends
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
+import io
 
 from app.db.database import get_db
 from app.db.schemas import (
     CampaignCreate, CampaignUpdate, 
     CampaignListResponse, CampaignDetail
 )
-from app.service.services import (
+from app.service.campaign_service import (
     list_campaigns, create_campaign,
     get_campaign_detail, update_campaign_status
 )
+from app.service.export_service import generate_pdf, generate_excel
 
 router = APIRouter()
 
-
 @router.get("/campaign", response_model=CampaignListResponse, tags=["Campaign"])
 def list_campaign(db: Session = Depends(get_db)):
-    """
-    List semua campaign yang ada
-    """
     result = list_campaigns(db)
     
     if result["status"] == "success":
@@ -38,14 +37,6 @@ def list_campaign(db: Session = Depends(get_db)):
 
 @router.post("/campaign/start", tags=["Campaign"])
 def campaign_start(req: CampaignCreate, db: Session = Depends(get_db)):
-    """
-    Create campaign baru (seperti start scan)
-    
-    Parameters:
-    - name: Nama campaign
-    - imsi: IMSI untuk scanning
-    - provider: Provider/Operator
-    """
     result = create_campaign(db, req.name, req.imsi, req.provider)
     
     if result["status"] == "success":
@@ -56,12 +47,6 @@ def campaign_start(req: CampaignCreate, db: Session = Depends(get_db)):
 
 @router.get("/campaign/{campaign_id}/detail", response_model=CampaignDetail, tags=["Campaign"])
 def get_campaign(campaign_id: int, db: Session = Depends(get_db)):
-    """
-    Get detail campaign dengan list crawling data
-    
-    Parameters:
-    - campaign_id: ID campaign yang ingin dilihat
-    """
     result = get_campaign_detail(db, campaign_id)
     
     if result["status"] == "success":
@@ -81,16 +66,48 @@ def get_campaign(campaign_id: int, db: Session = Depends(get_db)):
 
 @router.put("/campaign/{campaign_id}/stop", tags=["Campaign"])
 def campaign_stop(campaign_id: int, req: CampaignUpdate, db: Session = Depends(get_db)):
-    """
-    Update campaign status (misal: dari started -> stopped)
-    
-    Parameters:
-    - campaign_id: ID campaign yang ingin diupdate
-    - status: Status baru (started, stopped, completed, failed)
-    """
     result = update_campaign_status(db, campaign_id, req.status)
     
     if result["status"] == "success":
         return result
     
     raise HTTPException(status_code=404, detail=result["message"])
+
+
+@router.get("/campaign/{campaign_id}/export/{export_type}", tags=["Campaign"])
+def export_campaign(campaign_id: int, export_type: str, db: Session = Depends(get_db)):
+    """
+    Export campaign crawling data
+    - export_type: "pdf" atau "excel"
+    """
+    if export_type not in ["pdf", "excel"]:
+        raise HTTPException(status_code=400, detail="Export type harus 'pdf' atau 'excel'")
+    
+    try:
+        if export_type == "pdf":
+            pdf_bytes = generate_pdf(db, campaign_id)
+            if not pdf_bytes:
+                raise HTTPException(status_code=404, detail="Campaign tidak ditemukan")
+            
+            return StreamingResponse(
+                io.BytesIO(pdf_bytes),
+                media_type="application/pdf",
+                headers={"Content-Disposition": f"attachment; filename=campaign_{campaign_id}_crawling.pdf"}
+            )
+        
+        else:  # excel
+            excel_bytes = generate_excel(db, campaign_id)
+            if not excel_bytes:
+                raise HTTPException(status_code=404, detail="Campaign tidak ditemukan")
+            
+            return StreamingResponse(
+                io.BytesIO(excel_bytes),
+                media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                headers={"Content-Disposition": f"attachment; filename=campaign_{campaign_id}_crawling.xlsx"}
+            )
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Export error: {e}")
+        raise HTTPException(status_code=500, detail=f"Error generating export: {str(e)}")

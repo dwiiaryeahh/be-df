@@ -69,13 +69,11 @@ class StopStatus(BaseModel):
 
 
 class StartOneRequest(BaseModel):
-    sn: str = Field(default="SN12345678", description="Serial number perangkat (8–20 karakter alfanumerik)")
-    ip: str = Field(default="192.168.10.11", description="masukan ip yang akan di start)")
+    ip: str = Field(..., description="IP device yang akan di-start")
 
 
 class StopOneRequest(BaseModel):
-    sn: str = Field(default="SN12345678", description="Serial number perangkat (8–20 karakter alfanumerik)")
-    ip: str = Field(default="192.168.10.11", description="masukan ip yang akan di start)")
+    ip: str = Field(..., description="IP device yang akan di-stop")
 
 
 class DeviceInfo(BaseModel):

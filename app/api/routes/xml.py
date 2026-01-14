@@ -1,24 +1,17 @@
-"""
-XML endpoints - Get/Set XML configuration
-Tags: Get XML, Set XML
-"""
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Query
 from sqlalchemy.orm import Session
 import time
 import os
-
+import xml.etree.ElementTree as ET
 from app.db.database import get_db
-from app.db.schemas import SetXmlRequest
 from app.service.services import get_all_ips_db, get_send_command_instance, XML_TYPE_MAP, build_xml_path
+from app.service.heartbeat_service import update_heartbeat
+from app.config.utils import SetAppCfgExt, SetCellPara
 
 router = APIRouter()
 
-
 @router.get("/cell_para", tags=["Get XML"])
 def get_cellpara(db: Session = Depends(get_db)):
-    """
-    Kirim GetCellPara ke semua IP dari table heartbeat.
-    """
     try:
         ip_list = get_all_ips_db(db)
         if not ip_list:
@@ -30,6 +23,7 @@ def get_cellpara(db: Session = Depends(get_db)):
                 get_send_command_instance().command(ip, XML_TYPE_MAP["cell_para"]["get"])
                 file_path = build_xml_path("cell_para", ip)
                 exists = os.path.exists(file_path)
+                update_heartbeat(db, ip, file_path) if exists else None
                 msg = "File XML telah dibuat berdasarkan IP" if exists else "Perintah dikirim, menunggu file XML"
                 results.append({"ip": ip, "status": "success", "file_exists": exists, "file_path": file_path, "message": msg})
             except Exception as e:
@@ -44,9 +38,6 @@ def get_cellpara(db: Session = Depends(get_db)):
 
 @router.get("/app_cfg_ext", tags=["Get XML"])
 def get_appcfgext(db: Session = Depends(get_db)):
-    """
-    Kirim GetAppCfgExt ke semua IP dari table heartbeat.
-    """
     try:
         ip_list = get_all_ips_db(db)
         if not ip_list:
@@ -69,52 +60,12 @@ def get_appcfgext(db: Session = Depends(get_db)):
     except Exception as e:
         return {"status": "error", "last_checked": time.strftime("%Y-%m-%d %H:%M:%S"), "details": [{"error": str(e)}]}
 
-
-@router.post("/set_xml", tags=["Set XML"])
-def set_xml(req: SetXmlRequest, db: Session = Depends(get_db)):
-    """Set XML configuration untuk device"""
-    if req.type not in XML_TYPE_MAP:
-        raise HTTPException(status_code=400, detail="type tidak dikenali")
-
-    cmd = XML_TYPE_MAP[req.type]["set"]
-
+@router.post("/set_app_cfg_ext", tags=["Set BBU"])
+def set_appcfgext(
+    provider: str = Query("telkomsel", description="Nama provider folder appcfg (mis: telkomsel, indosat, xl)"),
+    db: Session = Depends(get_db)
+):
     try:
-        # Case 1: items (multi ip)
-        if req.items:
-            results = []
-            for item in req.items:
-                try:
-                    ip = item.get("ip")
-                    xml = item.get("xml")
-                    file_path = build_xml_path(req.type, ip)
-                    os.makedirs(os.path.dirname(file_path), exist_ok=True)
-                    with open(file_path, "w") as f:
-                        f.write(xml)
-                    get_send_command_instance().command(ip, cmd)
-                    exists = os.path.exists(file_path)
-                    results.append({"ip": ip, "status": "success", "file_path": file_path, "file_exists": exists, "updated": True})
-                except Exception as e:
-                    results.append({"ip": item.get("ip"), "status": "error", "error": str(e)})
-
-            return {"status": "success", "last_checked": time.strftime("%Y-%m-%d %H:%M:%S"), "details": results}
-
-        # Case 2: single ip
-        if req.ip:
-            file_path = build_xml_path(req.type, req.ip)
-            if req.xml is not None:
-                os.makedirs(os.path.dirname(file_path), exist_ok=True)
-                with open(file_path, "w") as f:
-                    f.write(req.xml)
-            get_send_command_instance().command(req.ip, cmd)
-            exists = os.path.exists(file_path)
-
-            return {
-                "status": "success",
-                "last_checked": time.strftime("%Y-%m-%d %H:%M:%S"),
-                "details": [{"ip": req.ip, "file_path": file_path, "file_exists": exists, "updated": req.xml is not None}]
-            }
-
-        # Case 3: broadcast ke semua IP dari DB
         ip_list = get_all_ips_db(db)
         if not ip_list:
             raise HTTPException(status_code=404, detail="Tidak ada device di table heartbeat.")
@@ -122,19 +73,93 @@ def set_xml(req: SetXmlRequest, db: Session = Depends(get_db)):
         results = []
         for ip in ip_list:
             try:
-                file_path = build_xml_path(req.type, ip)
-                if req.xml is not None:
-                    os.makedirs(os.path.dirname(file_path), exist_ok=True)
-                    with open(file_path, "w") as f:
-                        f.write(req.xml)
+                tree = ET.parse(f'app/mode/appcfg/{provider}/appcfgext_{ip}.xml')
+                root = tree.getroot()
+                msg = ET.tostring(root, encoding='utf-8').decode()
+                appcfg = f'{SetAppCfgExt}  <?xml version="1.0" encoding="utf-8"?> ' + msg
+                get_send_command_instance().command(ip, appcfg)
+                results.append({"ip": ip, "status": "success", "provider": provider})
+            except Exception as e:
+                results.append({"ip": ip, "status": "error", "error": str(e), "provider": provider})
+
+        return {"status": "success", "last_checked": time.strftime("%Y-%m-%d %H:%M:%S"), "details": results}
+    except HTTPException:
+        raise
+    except Exception as e:
+        return {"status": "error", "last_checked": time.strftime("%Y-%m-%d %H:%M:%S"), "details": [{"error": str(e)}]}
+
+@router.post("/set_cell_para", tags=["Set BBU"])
+def set_appcfgext(
+    provider: str = Query("telkomsel", description="Nama provider folder appcfg (mis: telkomsel, indosat, xl)"),
+    db: Session = Depends(get_db)
+):
+    try:
+        ip_list = get_all_ips_db(db)
+        if not ip_list:
+            raise HTTPException(status_code=404, detail="Tidak ada device di table heartbeat.")
+
+        results = []
+        for ip in ip_list:
+            try:
+                tree = ET.parse(f'app/mode/cellpara/{provider}/cellpara_{ip}.xml')
+                root = tree.getroot()
+                msg = ET.tostring(root, encoding='utf-8').decode()
+                cellpara = f'{SetCellPara}  <?xml version="1.0" encoding="utf-8"?> ' + msg
+                get_send_command_instance().command(ip, cellpara)
+                results.append({"ip": ip, "status": "success", "provider": provider})
+            except Exception as e:
+                results.append({"ip": ip, "status": "error", "error": str(e), "provider": provider})
+
+        return {"status": "success", "last_checked": time.strftime("%Y-%m-%d %H:%M:%S"), "details": results}
+    except HTTPException:
+        raise
+    except Exception as e:
+        return {"status": "error", "last_checked": time.strftime("%Y-%m-%d %H:%M:%S"), "details": [{"error": str(e)}]}
+
+@router.post("/set_blacklist", tags=["Set BBU"])
+def set_blacklist(
+    db: Session = Depends(get_db),
+    imsi: str = Query(),
+):
+    try:
+        ip_list = get_all_ips_db(db)
+        if not ip_list:
+            raise HTTPException(status_code=404, detail="Tidak ada device di table heartbeat.")
+        
+        cmd = f'SetBlacklist {imsi}'
+        results = []
+        for ip in ip_list:
+            try:
                 get_send_command_instance().command(ip, cmd)
-                exists = os.path.exists(file_path)
-                results.append({"ip": ip, "status": "success", "file_path": file_path, "file_exists": exists, "updated": req.xml is not None})
+                results.append({"ip": ip, "status": "success", })
             except Exception as e:
                 results.append({"ip": ip, "status": "error", "error": str(e)})
 
         return {"status": "success", "last_checked": time.strftime("%Y-%m-%d %H:%M:%S"), "details": results}
+    except HTTPException:
+        raise
+    except Exception as e:
+        return {"status": "error", "last_checked": time.strftime("%Y-%m-%d %H:%M:%S"), "details": [{"error": str(e)}]}
 
+@router.post("/set_ul_para", tags=["Set BBU"])
+def set_ul_para(
+    db: Session = Depends(get_db),
+):
+    try:
+        ip_list = get_all_ips_db(db)
+        if not ip_list:
+            raise HTTPException(status_code=404, detail="Tidak ada device di table heartbeat.")
+        
+        cmd = f'SetUlPcPara 40 30 1'
+        results = []
+        for ip in ip_list:
+            try:
+                get_send_command_instance().command(ip, cmd)
+                results.append({"ip": ip, "status": "success", })
+            except Exception as e:
+                results.append({"ip": ip, "status": "error", "error": str(e)})
+
+        return {"status": "success", "last_checked": time.strftime("%Y-%m-%d %H:%M:%S"), "details": results}
     except HTTPException:
         raise
     except Exception as e:

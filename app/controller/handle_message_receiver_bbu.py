@@ -3,14 +3,14 @@ from app.config.utils import HeartBeat, GetCellParaRsp, GetAppCfgExtRsp, OneUeIn
 import time
 import re
 import os
-
+import asyncio
 from app.db.database import SessionLocal, engine
 from app.db import models
-from app.db.models import Heartbeat as HeartbeatModel, Crawling as CrawlingModel
-from app.service.services import insert_sniffer_nmmcfg, reset_nmmcfg
-from app.ws import runtime
+from app.service.heartbeat_service import get_heartbeat_by_ip
+from app.service.services import provider_mapping
+from app.service.sniffer_service import insert_sniffer_nmmcfg, reset_nmmcfg
+from app.ws.events import event_bus
 
-# pastikan table ada (aman walau dipanggil berulang)
 models.Base.metadata.create_all(bind=engine)
 
 def save_xml_file(message, source_ip, folder_name, log_message):
@@ -43,13 +43,10 @@ def RespUdp(message, addr):
 
     date_now = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 
-    from app.service.services import (
-        upsert_heartbeat, 
-        upsert_crawling, 
-        insert_or_update_gps, 
-        update_status_ip_sniffer,
-        get_provider_data
-    )
+    from app.service.services import get_provider_data
+    from app.service.heartbeat_service import upsert_heartbeat, update_status_ip_sniffer
+    from app.service.crawling_service import upsert_crawling
+    from app.service.gps_service import upsert_gps, get_gps_data
 
     db = SessionLocal()
     try:
@@ -57,7 +54,8 @@ def RespUdp(message, addr):
             STATE = message.split("STATE[")[1].split("]")[0]
             TEMP = message.split("TEMP[")[1].split("]")[0]
             MODE = message.split("MODE[")[1].split("]")[0]
-            CH = message.split(" ")[3]  # contoh: CH-04
+            BAND = message.split("BAND[")[1].split("]")[0]
+            CH = message.split(" ")[3]
 
             if STATE == "CLOSED":
                 STATE = "ONLINE"
@@ -70,11 +68,28 @@ def RespUdp(message, addr):
                 mode=MODE,
                 ch=CH,
                 timestamp=date_now,
+                band=BAND
             )
             db.commit()
 
-            # Note: Heartbeat broadcasts ditangani oleh /ws/device endpoint
-            # yang mengirim snapshot semua devices setiap 2 detik (format baru)
+            heartbeat_data = get_heartbeat_by_ip(db, source_ip)
+            start_imsi = heartbeat_data.mcc + heartbeat_data.mnc if heartbeat_data else ""
+
+            heartbeat_data = {
+                "type": "heartbeat",
+                "ip": source_ip,
+                "state": STATE,
+                "temp": TEMP,
+                "mode": MODE,
+                "ch": CH,
+                "band": BAND or heartbeat_data.band,
+                "provider": provider_mapping(start_imsi),
+                "mcc": heartbeat_data.mcc,
+                "mnc": heartbeat_data.mnc,
+                "arfcn": heartbeat_data.arfcn,
+                "timestamp": date_now
+            }
+            asyncio.run(event_bus.send_heartbeat(heartbeat_data))
 
         elif GetCellParaRsp in message:
             save_xml_file(message, source_ip, 'cellpara', "(CellParaRsp)")
@@ -89,8 +104,9 @@ def RespUdp(message, addr):
             ulRssi = message.split("ulRssi[")[1].split("]")[0]
             imsi = message.split("imsi[")[1].split("]")[0]
 
-            from app.service.services import get_latest_campaign_id
+            from app.service.campaign_service import get_latest_campaign_id
             campaign_id = get_latest_campaign_id(db)
+            gps = get_gps_data(db)
 
             upsert_crawling(
                 db=db,
@@ -105,17 +121,28 @@ def RespUdp(message, addr):
             )
             db.commit()
 
+            crawling_data = {
+                "type": "crawling",
+                "imsi": imsi,
+                "timestamp": date_now,
+                "rsrp": rsrp,
+                "taType": taType,
+                "ulCqi": ulCqi,
+                "ulRssi": ulRssi,
+                "ip": source_ip,
+
+                "campaign_id": campaign_id
+            }
+            asyncio.run(event_bus.send_crawling(crawling_data))
+
         elif GPSInfoIndi in message:
             latitude = message.split("latitude[")[1].split("]")[0]
             longitude = message.split("longitude[")[1].split("]")[0]
             date = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
             print("GPS Info - Latitude:", latitude, "Longitude:", longitude, "Date:", date)
-            insert_or_update_gps(latitude, longitude, date)
+            upsert_gps(latitude, longitude, date)
 
         elif "SnifferRsltIndi" in message:
-            start = 0
-            stop = 2
-
             if "[-1]" not in message:
                 pattern = r'erfcn\[(\d+)\],pci\[(\d+)\],rsrp\[(-?\d+)\]'
                 match = re.search(pattern, message)
@@ -142,10 +169,31 @@ def RespUdp(message, addr):
 
                     update_status_ip_sniffer(source_ip, 'scan', 1, db)
 
+                    sniffing_data = {
+                        "type": "sniffing",
+                        "ip": source_ip,
+                        "arfcn": earfcn_value,
+                        "operator": prov["operator"],
+                        "band": prov["band"],
+                        "dl_freq": prov["dl_freq"],
+                        "ul_freq": prov["ul_freq"],
+                        "pci": str(pci_value) if pci_value else None,
+                        "rsrp": str(rsrp_value) if rsrp_value else None,
+                        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+                    }
+                    asyncio.run(event_bus.send_sniffing(sniffing_data))
+
             else:
                 print("masuk -1 nih<<<<<<<", message)
                 time.sleep(1)
                 update_status_ip_sniffer(source_ip, 'scan', -1, db)
+                
+                sniffing_complete = {
+                    "type": "sniffing_complete",
+                    "ip": source_ip,
+                    "timestamp": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+                }
+                asyncio.run(event_bus.send_sniffing(sniffing_complete))
 
 
         elif "StartSniffer" in message:
