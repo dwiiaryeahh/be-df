@@ -103,10 +103,13 @@ def RespUdp(message, addr):
             ulCqi = message.split("ulCqi[")[1].split("]")[0]
             ulRssi = message.split("ulRssi[")[1].split("]")[0]
             imsi = message.split("imsi[")[1].split("]")[0]
+            ch_match = re.search(r"CH-(\S+)", message)
+            ch = ch_match.group(1) if ch_match else None
 
             from app.service.campaign_service import get_latest_campaign_id
             campaign_id = get_latest_campaign_id(db)
-            gps = get_gps_data(db)
+            # to get lat long then update every crawling record to campaign active
+            # gps = get_gps_data(db)
 
             upsert_crawling(
                 db=db,
@@ -117,6 +120,7 @@ def RespUdp(message, addr):
                 ulRssi=ulRssi,
                 imsi=imsi,
                 ip=source_ip,
+                ch=ch,
                 campaign_id=campaign_id,
             )
             db.commit()
@@ -130,7 +134,7 @@ def RespUdp(message, addr):
                 "ulCqi": ulCqi,
                 "ulRssi": ulRssi,
                 "ip": source_ip,
-
+                "ch": ch,
                 "campaign_id": campaign_id
             }
             asyncio.run(event_bus.send_crawling(crawling_data))

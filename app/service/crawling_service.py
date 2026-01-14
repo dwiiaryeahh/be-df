@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from app.db.models import Crawling
 
-def upsert_crawling(db: Session, timestamp: str, rsrp: str, taType: str, ulCqi: str, ulRssi: str, imsi: str, ip: str, campaign_id: int = None) -> Crawling:
+def upsert_crawling(db: Session, timestamp: str, rsrp: str, taType: str, ulCqi: str, ulRssi: str, imsi: str, ip: str, ch: str, campaign_id: int = None) -> Crawling:
     # Cek apakah ada crawling dengan campaign_id dan imsi yang sama
     if campaign_id is not None:
         existing = db.query(Crawling).filter(
@@ -23,6 +23,7 @@ def upsert_crawling(db: Session, timestamp: str, rsrp: str, taType: str, ulCqi: 
         existing.ulCqi = ulCqi
         existing.ulRssi = ulRssi
         existing.ip = ip
+        existing.ch = ch
         row = existing
     else:
         # INSERT new record
@@ -34,6 +35,7 @@ def upsert_crawling(db: Session, timestamp: str, rsrp: str, taType: str, ulCqi: 
             ulRssi=ulRssi,
             imsi=imsi,
             ip=ip,
+            ch=ch,
             campaign_id=campaign_id,
         )
         db.add(row)

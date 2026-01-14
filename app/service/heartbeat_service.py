@@ -12,6 +12,7 @@ def get_heartbeat_by_ip(
         Heartbeat.source_ip == source_ip
     ).first()
 
+# Dipakai untuk update ketika melakukan GetCellPara
 def update_heartbeat(
     db: Session,
     source_ip: str,
@@ -36,6 +37,7 @@ def update_heartbeat(
 
     return row
 
+# Dipakai ketika melakukan crawling IMSI (START BBU)
 def upsert_heartbeat(db: Session, source_ip: str, state: str, temp: str, mode: str, ch: str, timestamp: str, band: str) -> Heartbeat:
     row = db.query(Heartbeat).filter(Heartbeat.source_ip == source_ip).first()
     if row:
@@ -59,6 +61,7 @@ def upsert_heartbeat(db: Session, source_ip: str, state: str, temp: str, mode: s
     
     return row
 
+# Dipakai ketika melakukan update status sniffer BBU
 def update_status_ip_sniffer(
     source_ip: str,
     update_type: str,

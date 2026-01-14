@@ -94,6 +94,7 @@ class Crawling(Base):
     taType = Column(String, nullable=False)
     ulCqi = Column(String, nullable=False)
     ulRssi = Column(String, nullable=False)
+    ch = Column(String, nullable=True)
 
     imsi = Column(String, nullable=False, index=True)
     ip = Column(String, nullable=False, index=True)

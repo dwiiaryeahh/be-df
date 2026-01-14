@@ -89,7 +89,7 @@ def set_appcfgext(
         return {"status": "error", "last_checked": time.strftime("%Y-%m-%d %H:%M:%S"), "details": [{"error": str(e)}]}
 
 @router.post("/set_cell_para", tags=["Set BBU"])
-def set_appcfgext(
+def set_cellpara(
     provider: str = Query("telkomsel", description="Nama provider folder appcfg (mis: telkomsel, indosat, xl)"),
     db: Session = Depends(get_db)
 ):
