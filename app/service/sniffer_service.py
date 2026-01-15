@@ -111,6 +111,10 @@ def get_sniffing_progress(db: Session) -> Dict:
         status = 'scanning'
     elif completed == total or elapsed_minutes >= 5:
         status = 'completed'
+        for hb in heartbeats:
+            if hb.sniff_scan != -1:
+                hb.sniff_scan = -1
+        db.commit()
     else:
         status = 'idle'
     

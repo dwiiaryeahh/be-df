@@ -10,7 +10,7 @@ from app.config.utils import SetAppCfgExt, SetCellPara
 
 router = APIRouter()
 
-@router.get("/cell_para", tags=["Get XML"])
+@router.get("/get_cellpara", tags=["Get XML"])
 def get_cellpara(db: Session = Depends(get_db)):
     try:
         ip_list = get_all_ips_db(db)
@@ -35,8 +35,7 @@ def get_cellpara(db: Session = Depends(get_db)):
     except Exception as e:
         return {"status": "error", "last_checked": time.strftime("%Y-%m-%d %H:%M:%S"), "details": [{"error": str(e)}]}
 
-
-@router.get("/app_cfg_ext", tags=["Get XML"])
+@router.get("/get_appcfgext", tags=["Get XML"])
 def get_appcfgext(db: Session = Depends(get_db)):
     try:
         ip_list = get_all_ips_db(db)
@@ -60,7 +59,33 @@ def get_appcfgext(db: Session = Depends(get_db)):
     except Exception as e:
         return {"status": "error", "last_checked": time.strftime("%Y-%m-%d %H:%M:%S"), "details": [{"error": str(e)}]}
 
-@router.post("/set_app_cfg_ext", tags=["Set BBU"])
+@router.get("/get_blacklist", tags=["Get XML"])
+def get_blacklist(
+    db: Session = Depends(get_db),
+    imsi: str = Query(),
+):
+    try:
+        ip_list = get_all_ips_db(db)
+        if not ip_list:
+            raise HTTPException(status_code=404, detail="Tidak ada device di table heartbeat.")
+        
+        cmd = f'GetBlackList'
+        results = []
+        for ip in ip_list:
+            try:
+                get_send_command_instance().command(ip, cmd)
+                results.append({"ip": ip, "status": "success", })
+            except Exception as e:
+                results.append({"ip": ip, "status": "error", "error": str(e)})
+
+        return {"status": "success", "last_checked": time.strftime("%Y-%m-%d %H:%M:%S"), "details": results}
+    except HTTPException:
+        raise
+    except Exception as e:
+        return {"status": "error", "last_checked": time.strftime("%Y-%m-%d %H:%M:%S"), "details": [{"error": str(e)}]}
+
+
+@router.post("/set_appcfgext", tags=["Set BBU"])
 def set_appcfgext(
     provider: str = Query("telkomsel", description="Nama provider folder appcfg (mis: telkomsel, indosat, xl)"),
     db: Session = Depends(get_db)
@@ -88,7 +113,7 @@ def set_appcfgext(
     except Exception as e:
         return {"status": "error", "last_checked": time.strftime("%Y-%m-%d %H:%M:%S"), "details": [{"error": str(e)}]}
 
-@router.post("/set_cell_para", tags=["Set BBU"])
+@router.post("/set_cellpara", tags=["Set BBU"])
 def set_cellpara(
     provider: str = Query("telkomsel", description="Nama provider folder appcfg (mis: telkomsel, indosat, xl)"),
     db: Session = Depends(get_db)
@@ -126,7 +151,7 @@ def set_blacklist(
         if not ip_list:
             raise HTTPException(status_code=404, detail="Tidak ada device di table heartbeat.")
         
-        cmd = f'SetBlacklist {imsi}'
+        cmd = f'SetBlackList {imsi}'
         results = []
         for ip in ip_list:
             try:
@@ -141,8 +166,8 @@ def set_blacklist(
     except Exception as e:
         return {"status": "error", "last_checked": time.strftime("%Y-%m-%d %H:%M:%S"), "details": [{"error": str(e)}]}
 
-@router.post("/set_ul_para", tags=["Set BBU"])
-def set_ul_para(
+@router.post("/set_ulpara", tags=["Set BBU"])
+def set_ulpara(
     db: Session = Depends(get_db),
 ):
     try:

@@ -108,8 +108,8 @@ def stop(db: Session = Depends(get_db)):
         return {"status": "error", "last_checked": time.strftime("%Y-%m-%d %H:%M:%S"),
                 "details": [{"ip": "all", "status": "error", "error": str(e)}]}
 
-@router.post("/start_sniffer", response_model=StopStatus, tags=["Crawling Imsi"])
-def start_sniffer(db: Session = Depends(get_db)):
+@router.post("/start_sniffing", response_model=StopStatus, tags=["Crawling Imsi"])
+def start_sniffing(db: Session = Depends(get_db)):
     try:
         ip_list = get_ips_with_sniffer_enabled(db)
         if not ip_list:
