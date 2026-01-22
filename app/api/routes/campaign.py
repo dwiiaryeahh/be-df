@@ -2,7 +2,7 @@
 Campaign endpoints - Campaign management (List, Create, Detail, Update)
 Tags: Campaign
 """
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 import io
@@ -111,3 +111,15 @@ def export_campaign(campaign_id: int, export_type: str, db: Session = Depends(ge
     except Exception as e:
         print(f"Export error: {e}")
         raise HTTPException(status_code=500, detail=f"Error generating export: {str(e)}")
+    
+
+@router.post("/send_arfcn", tags=["Campaign"])
+def send_arfcn(arfcn: int = Query(...)):
+    print(f"Received ARFCN: {arfcn}")
+    return {
+        "status": "success",
+        "message": "ARFCN received successfully",
+        "data": {
+            "arfcn": arfcn,
+        }
+    }

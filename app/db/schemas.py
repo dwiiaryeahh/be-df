@@ -111,6 +111,7 @@ class CrawlingData(BaseModel):
     ulRssi: str
     imsi: str
     ip: str
+    ch: str
 
 
 class CampaignCreate(BaseModel):

@@ -16,6 +16,8 @@ class Heartbeat(Base):
     arfcn = Column(String, nullable=True)
     mcc = Column(String, nullable=True)
     mnc = Column(String, nullable=True)
+    ul_freq = Column(String, nullable=True)
+    dl_freq = Column(String, nullable=True)
     sniff_status = Column(Integer, nullable=True, default=1) 
     # 0 Mati (tidak ada modul sniff) 
     # 1 Nyala (ada modul sniff)
@@ -24,6 +26,7 @@ class Heartbeat(Base):
     # 1 Nyala (lagi sniff) 
     # 0 (tidak ada modul sniff)
     timestamp = Column(String, nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
 class NmmCfg(Base):
     __tablename__ = "nmmcfg"
@@ -38,6 +41,7 @@ class NmmCfg(Base):
     pci = Column(String, nullable=True)
     rsrp = Column(String, nullable=True)
     band = Column(Integer, nullable=True)
+    ch = Column(String, nullable=True)
 
 class Operator(Base):
     __tablename__ = "operator"
@@ -95,6 +99,7 @@ class Crawling(Base):
     ulCqi = Column(String, nullable=False)
     ulRssi = Column(String, nullable=False)
     ch = Column(String, nullable=True)
+    provider = Column(String, nullable=True)
 
     imsi = Column(String, nullable=False, index=True)
     ip = Column(String, nullable=False, index=True)
@@ -104,6 +109,7 @@ class Crawling(Base):
 
     campaign_id = Column(Integer, ForeignKey("campaign.id"), nullable=True)
     campaign = relationship("Campaign", back_populates="crawlings")
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
 class GPS(Base):
     __tablename__ = "gps"

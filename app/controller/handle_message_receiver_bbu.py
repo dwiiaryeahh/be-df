@@ -7,7 +7,7 @@ import asyncio
 from app.db.database import SessionLocal, engine
 from app.db import models
 from app.service.heartbeat_service import get_heartbeat_by_ip
-from app.service.services import provider_mapping
+from app.service.services import get_frequency, provider_mapping
 from app.service.sniffer_service import insert_sniffer_nmmcfg, reset_nmmcfg
 from app.ws.events import event_bus
 
@@ -101,15 +101,16 @@ def RespUdp(message, addr):
             rsrp = message.split("rsrp[")[1].split("]")[0]
             taType = message.split("taType[")[1].split("]")[0]
             ulCqi = message.split("ulCqi[")[1].split("]")[0]
-            ulRssi = message.split("ulRssi[")[1].split("]")[0]
+            ulRssi_raw = message.split("ulRssi[")[1].split("]")[0]
+            ulRssi = str(int(ulRssi_raw) - 130)
             imsi = message.split("imsi[")[1].split("]")[0]
             ch_match = re.search(r"CH-(\S+)", message)
             ch = ch_match.group(1) if ch_match else None
 
+            freq = get_frequency(source_ip) 
+
             from app.service.campaign_service import get_latest_campaign_id
             campaign_id = get_latest_campaign_id(db)
-            # to get lat long then update every crawling record to campaign active
-            # gps = get_gps_data(db)
 
             upsert_crawling(
                 db=db,
@@ -120,13 +121,15 @@ def RespUdp(message, addr):
                 ulRssi=ulRssi,
                 imsi=imsi,
                 ip=source_ip,
-                ch=ch,
+                ch="CH-" + ch if ch else None,
+                provider=provider_mapping(imsi),
                 campaign_id=campaign_id,
             )
             db.commit()
 
             crawling_data = {
                 "type": "crawling",
+                "provider": provider_mapping(imsi),
                 "imsi": imsi,
                 "timestamp": date_now,
                 "rsrp": rsrp,
@@ -134,7 +137,11 @@ def RespUdp(message, addr):
                 "ulCqi": ulCqi,
                 "ulRssi": ulRssi,
                 "ip": source_ip,
-                "ch": ch,
+                "ch": "CH-" + ch if ch else None,  
+                "arfcn": freq["arfcn"] if freq else None,
+                "ul_freq": freq["ul_freq"] if freq else None,
+                "dl_freq": freq["dl_freq"] if freq else None,
+                "mode": freq["mode"] if freq else None,
                 "campaign_id": campaign_id
             }
             asyncio.run(event_bus.send_crawling(crawling_data))
@@ -156,6 +163,8 @@ def RespUdp(message, addr):
                     earfcn_value = int(match.group(1))
                     pci_value = match.group(2)
                     rsrp_value = match.group(3)
+                    ch_match = re.search(r"CH-(\S+)", message)
+                    ch = ch_match.group(1) if ch_match else None
 
                     prov = get_provider_data(db, earfcn_value)
 
@@ -169,6 +178,7 @@ def RespUdp(message, addr):
                         ul_freq=prov["ul_freq"],
                         pci=str(pci_value) if pci_value else None,
                         rsrp=str(rsrp_value) if rsrp_value else None,
+                        ch="CH-" + ch if ch else None
                     )
 
                     update_status_ip_sniffer(source_ip, 'scan', 1, db)
@@ -183,7 +193,8 @@ def RespUdp(message, addr):
                         "ul_freq": prov["ul_freq"],
                         "pci": str(pci_value) if pci_value else None,
                         "rsrp": str(rsrp_value) if rsrp_value else None,
-                        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+                        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
+                        "ch": "CH-" + ch if ch else None
                     }
                     asyncio.run(event_bus.send_sniffing(sniffing_data))
 

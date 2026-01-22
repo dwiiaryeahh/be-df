@@ -2,32 +2,29 @@
 <content>
     <workTypeCfgActive>true </workTypeCfgActive>
     <workTypeCfg>
-        <workType> 0</workType>
-        <followParaValidIndi>false </followParaValidIndi>
+        <workType> 4</workType>
+        <followParaValidIndi>true </followParaValidIndi>
         <imeiTry>false </imeiTry>
-        <tacUpdatePeriodInSec> 360</tacUpdatePeriodInSec>
+        <tacUpdatePeriodInSec> 60</tacUpdatePeriodInSec>
         <cellRipRptEn>false </cellRipRptEn>
-        <ueRptWithMeas>true </ueRptWithMeas>
-        <tacLacMax> 65535</tacLacMax>
+        <ueRptWithMeas>false </ueRptWithMeas>
+        <tacLacMax> 0</tacLacMax>
         <tacLacMin> 0</tacLacMin>
+        <rptVerbEn>false </rptVerbEn>
+        <tmHost></tmHost>
     </workTypeCfg>
     <cmmUeRedirectCfgActive>true </cmmUeRedirectCfgActive>
     <cmmUeRedirectCfg>
-        <rejCause> 16</rejCause>
+        <rejCause> 3</rejCause>
         <redirectItem itemCnt = "3">
             <item>
                 <mcc> 0</mcc>
                 <mnc> 0</mnc>
                 <rat>REDIRECT_GSM</rat>
                 <band> 0</band>
-                <fcn> 512</fcn>
-            </item>
-            <item>
-                <mcc> 0</mcc>
-                <mnc> 0</mnc>
-                <rat>REDIRECT_GSM</rat>
-                <band> 0</band>
                 <fcn> 3</fcn>
+                <rejType> 0</rejType>
+                <rejcause> 0</rejcause>
             </item>
             <item>
                 <mcc> 0</mcc>
@@ -35,13 +32,33 @@
                 <rat>REDIRECT_GSM</rat>
                 <band> 0</band>
                 <fcn> 78</fcn>
+                <rejType> 0</rejType>
+                <rejcause> 0</rejcause>
+            </item>
+            <item>
+                <mcc> 0</mcc>
+                <mnc> 0</mnc>
+                <rat>REDIRECT_GSM</rat>
+                <band> 0</band>
+                <fcn> 512</fcn>
+                <rejType> 0</rejType>
+                <rejcause> 0</rejcause>
             </item>
         </redirectItem>
     </cmmUeRedirectCfg>
-    <blkUeRedirectCfgActive>false </blkUeRedirectCfgActive>
+    <blkUeRedirectCfgActive>true </blkUeRedirectCfgActive>
     <blkUeRedirectCfg>
-        <rejCause> 13</rejCause>
-        <redirectItem itemCnt = "0">
+        <rejCause> 16</rejCause>
+        <redirectItem itemCnt = "1">
+            <item>
+                <mcc> 510</mcc>
+                <mnc> 10</mnc>
+                <rat>REDIRECT_LTE</rat>
+                <band> 3</band>
+                <fcn> 1850</fcn>
+                <rejType> 0</rejType>
+                <rejcause> 0</rejcause>
+            </item>
         </redirectItem>
     </blkUeRedirectCfg>
     <whiteUeRedirectCfgActive>true </whiteUeRedirectCfgActive>
@@ -54,6 +71,8 @@
                 <rat>REDIRECT_WCDMA</rat>
                 <band> 0</band>
                 <fcn> 10638</fcn>
+                <rejType> 0</rejType>
+                <rejcause> 0</rejcause>
             </item>
             <item>
                 <mcc> 0</mcc>
@@ -61,6 +80,8 @@
                 <rat>REDIRECT_WCDMA</rat>
                 <band> 1</band>
                 <fcn> 0</fcn>
+                <rejType> 0</rejType>
+                <rejcause> 0</rejcause>
             </item>
             <item>
                 <mcc> 0</mcc>
@@ -68,10 +89,12 @@
                 <rat>REDIRECT_WCDMA</rat>
                 <band> 0</band>
                 <fcn> 0</fcn>
+                <rejType> 0</rejType>
+                <rejcause> 0</rejcause>
             </item>
         </redirectItem>
     </whiteUeRedirectCfg>
-    <loopFcnCfgEn>true </loopFcnCfgEn>
+    <loopFcnCfgEn>false </loopFcnCfgEn>
     <loopFcnCfg>
         <loopPeriodSecCnt> 25</loopPeriodSecCnt>
         <item itemCnt = "5">
@@ -81,6 +104,7 @@
                 <mnc> 10</mnc>
                 <tac> 0</tac>
                 <nrFcn> 0</nrFcn>
+                <nrTac> 0</nrTac>
             </item>
             <item>
                 <fcn> 38894</fcn>
@@ -88,6 +112,7 @@
                 <mnc> 10</mnc>
                 <tac> 0</tac>
                 <nrFcn> 0</nrFcn>
+                <nrTac> 0</nrTac>
             </item>
             <item>
                 <fcn> 38948</fcn>
@@ -95,6 +120,7 @@
                 <mnc> 10</mnc>
                 <tac> 0</tac>
                 <nrFcn> 0</nrFcn>
+                <nrTac> 0</nrTac>
             </item>
             <item>
                 <fcn> 39250</fcn>
@@ -102,6 +128,7 @@
                 <mnc> 9</mnc>
                 <tac> 0</tac>
                 <nrFcn> 0</nrFcn>
+                <nrTac> 0</nrTac>
             </item>
             <item>
                 <fcn> 39448</fcn>
@@ -109,11 +136,16 @@
                 <mnc> 9</mnc>
                 <tac> 0</tac>
                 <nrFcn> 0</nrFcn>
+                <nrTac> 0</nrTac>
             </item>
         </item>
     </loopFcnCfg>
     <extCfgEn>false </extCfgEn>
     <ext>
+        <ankWlEn>false </ankWlEn>
+        <sntpEn>false </sntpEn>
+        <sntpSvr></sntpSvr>
+        <sntpPort> 0</sntpPort>
         <ftpEn>false </ftpEn>
         <ftp>
             <url></url>
@@ -161,11 +193,12 @@
             <nrFcn> 0</nrFcn>
             <nrTac> 0</nrTac>
             <plmn itemCnt = "0"></plmn>
+            <nrListenFcn> 0</nrListenFcn>
         </rfPara>
         <syncCfgEn>false </syncCfgEn>
         <sync>
             <mode> 0</mode>
-            <frmOfstInUs> 0</frmOfstInUs>
+            <frmOfstInUsOrListenFcn> 0</frmOfstInUsOrListenFcn>
         </sync>
     </ext>
     <extRfEn>false </extRfEn>
@@ -175,4 +208,19 @@
         <rmtSib1En>false </rmtSib1En>
         <sib1Band itemCnt = "0"></sib1Band>
     </extRf>
+    <repeatCfgEn>false </repeatCfgEn>
+    <repeatCfg>
+        <redirecCnt> 0</redirecCnt>
+        <redirecTmr> 0</redirecTmr>
+        <repeatFilterCnt> 0</repeatFilterCnt>
+        <repeatFilterTmr> 0</repeatFilterTmr>
+    </repeatCfg>
+    <extFtpOp> 0</extFtpOp>
+    <extFtpUploadPeriodSec> 0</extFtpUploadPeriodSec>
+    <extFtpCfg>
+        <url></url>
+        <port> 0</port>
+        <usr></usr>
+        <pswd></pswd>
+    </extFtpCfg>
 </content>

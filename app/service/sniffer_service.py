@@ -19,6 +19,7 @@ def insert_sniffer_nmmcfg(
     pci: str = None,
     rsrp: str = None,
     band: int = None,
+    ch: str= None
 ):
     """
     Insert 1 row ke tabel nmmcfg.
@@ -35,6 +36,7 @@ def insert_sniffer_nmmcfg(
             pci=pci,
             rsrp=rsrp,
             band=band,
+            ch=ch
         )
         db.add(row)
         db.commit()

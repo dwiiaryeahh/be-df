@@ -1,7 +1,7 @@
 from datetime import datetime
 from sqlalchemy.orm import Session
 from app.db.models import  Heartbeat
-from app.service.services import parse_xml
+from app.service.services import get_provider_data, parse_xml
 
 
 def get_heartbeat_by_ip(
@@ -23,6 +23,7 @@ def update_heartbeat(
     ).first()
 
     xml_parsing = parse_xml(file_path, row.mode)
+    freq_provider = get_provider_data(db, xml_parsing.get("frequency"))
 
     if not row:
         return None 
@@ -31,6 +32,8 @@ def update_heartbeat(
     row.mnc = xml_parsing.get("mnc", "")
     row.band = xml_parsing.get("band", "")
     row.arfcn = xml_parsing.get("frequency", "")
+    row.dl_freq = freq_provider.get("dl_freq", "")
+    row.ul_freq = freq_provider.get("ul_freq", "")
 
     db.commit()
     db.refresh(row)

@@ -4,6 +4,7 @@ Service layer - Business logic dan helper functions
 from typing import List, Dict
 import os
 from sqlalchemy.orm import Session
+from app.db.database import SessionLocal
 from app.db.models import FreqOperator, Heartbeat, Crawling, GPS, Operator
 import xml.etree.ElementTree as ET
 
@@ -96,29 +97,21 @@ def get_provider_data(db: Session, arfcn: int):
         "mode": row.mode,
     }
 
-def provider_mapping(start_imsi: str) -> str:
-    if (
-        start_imsi == "51001"
-        or start_imsi == "51021"
-        or start_imsi == "51089"
-        or start_imsi == "5101"
-    ):
-        return "Indosat"
-
-    elif start_imsi == "51010":
+def provider_mapping(imsi: str) -> str:
+    if imsi.startswith("51010"):
         return "Telkomsel"
 
-    elif start_imsi == "51011":
+    elif imsi.startswith("51011"):
         return "XL"
 
-    elif (
-        start_imsi == "51028"
-        or start_imsi == "51009"
-    ):
+    elif imsi.startswith(("51001", "51021", "51089", "5101")):
+        return "Indosat"
+
+    elif imsi.startswith(("51028", "51009")):
         return "Smartfren"
 
     else:
-        return ""
+        return "Other"
 
 def parse_xml(xml_path, mode):
     if os.path.isfile(xml_path) and os.path.getsize(xml_path) > 0:
@@ -197,3 +190,15 @@ def parse_xml(xml_path, mode):
     else:
         print(f"File XML kosong: {xml_path}. Tidak ada eksekusi yang dilakukan.")
         return None
+    
+def get_frequency(ip):
+    db = SessionLocal()
+    heartbeat_data = db.query(Heartbeat).filter(Heartbeat.source_ip == ip).first()
+    if heartbeat_data:
+        return {
+            "arfcn": heartbeat_data.arfcn, 
+            "ul_freq": heartbeat_data.ul_freq, 
+            "dl_freq": heartbeat_data.dl_freq,
+            "mode": heartbeat_data.mode
+        }
+    return None
