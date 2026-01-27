@@ -1,8 +1,10 @@
-from datetime import datetime
+import asyncio
+from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
+from app.db.database import SessionLocal
 from app.db.models import  Heartbeat
-from app.service.services import get_provider_data, parse_xml
-
+from app.service.services import get_provider_data, parse_xml, provider_mapping
+from app.ws.events import event_bus
 
 def get_heartbeat_by_ip(
     db: Session,
@@ -106,3 +108,75 @@ def update_status_ip_sniffer(
     )
     return True
 
+
+TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+def parse_timestamp(ts: str) -> datetime | None:
+    try:
+        return datetime.strptime(ts, TIME_FORMAT)
+    except Exception:
+        return None
+
+async def heartbeat_checker(db: Session):
+    now = datetime.now()
+    timeout_limit = now - timedelta(seconds=30)
+
+    rows = db.query(Heartbeat).filter(
+        Heartbeat.state != "OFFLINE"
+    ).all()
+
+    if not rows:
+        return
+
+    expired: list[Heartbeat] = []
+
+    for hb in rows:
+        ts = parse_timestamp(hb.timestamp)
+        if not ts:
+            print(f"[WARN] Invalid timestamp for IP {hb.source_ip}: {hb.timestamp}")
+            continue
+
+        time_diff = (now - ts).total_seconds()
+        
+        if ts < timeout_limit:
+            print(f"[INFO] Device {hb.source_ip} timeout detected ({time_diff:.1f}s) - Setting to OFFLINE")
+            hb.state = "OFFLINE"
+            expired.append(hb)
+
+    if not expired:
+        return
+
+    db.commit()
+
+    for hb in expired:
+        heartbeat_ws = {
+            "type": "heartbeat",
+            "ip": hb.source_ip,
+            "state": "OFFLINE",
+            "temp": hb.temp,
+            "mode": hb.mode,
+            "ch": hb.ch,
+            "band": hb.band,
+            "provider": provider_mapping(
+                (hb.mcc or "") + (hb.mnc or "")
+            ),
+            "mcc": hb.mcc,
+            "mnc": hb.mnc,
+            "arfcn": hb.arfcn,
+            "timestamp": hb.timestamp,  # ✅ GUNAKAN TIMESTAMP ASLI, BUKAN NOW
+        }
+
+        await event_bus.send_heartbeat(heartbeat_ws)
+        print(f"[OK] Sent OFFLINE status for {hb.source_ip} via WebSocket")
+
+async def heartbeat_watcher():
+    print("[OK] Heartbeat watcher started (timeout: 5s, check interval: 1s)")
+    while True:
+        db = SessionLocal()
+        try:
+            await heartbeat_checker(db)
+        except Exception as e:
+            print("[HEARTBEAT WATCHER ERROR]", e)
+        finally:
+            db.close()
+
+        await asyncio.sleep(1)

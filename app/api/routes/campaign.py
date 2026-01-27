@@ -2,6 +2,7 @@
 Campaign endpoints - Campaign management (List, Create, Detail, Update)
 Tags: Campaign
 """
+from typing import Optional
 from fastapi import APIRouter, HTTPException, Depends, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
@@ -114,12 +115,16 @@ def export_campaign(campaign_id: int, export_type: str, db: Session = Depends(ge
     
 
 @router.post("/send_arfcn", tags=["Campaign"])
-def send_arfcn(arfcn: int = Query(...)):
-    print(f"Received ARFCN: {arfcn}")
+def send_arfcn(
+    arfcn: int = Query(...),
+    status: Optional[bool] = Query(None)
+):
+    print(f"Received ARFCN: {arfcn} STATUS : {status}")
     return {
         "status": "success",
         "message": "ARFCN received successfully",
         "data": {
             "arfcn": arfcn,
+            "status": status
         }
     }

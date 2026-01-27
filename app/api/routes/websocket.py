@@ -20,7 +20,9 @@ async def ws_device(websocket: WebSocket):
             try:
                 await websocket.send_json(data)
             except Exception as e:
+                import traceback
                 print(f"[ERROR] ws_device send error: {e}")
+                print(f"[ERROR] Traceback: {traceback.format_exc()}")
         
         # Subscribe ke heartbeat events
         sub_id = event_bus.subscribe_heartbeat(on_heartbeat_data)
@@ -55,7 +57,9 @@ async def ws_data_imsi(websocket: WebSocket, campaign_id: int = None):
                     return
                 await websocket.send_json(data)
             except Exception as e:
+                import traceback
                 print(f"[ERROR] ws_data_imsi send error: {e}")
+                print(f"[ERROR] Traceback: {traceback.format_exc()}")
         
         # Subscribe ke crawling events
         sub_id = event_bus.subscribe_crawling(on_crawling_data)
@@ -86,7 +90,9 @@ async def ws_sniffing(websocket: WebSocket):
             try:
                 await websocket.send_json(data)
             except Exception as e:
+                import traceback
                 print(f"[ERROR] ws_sniffing send error: {e}")
+                print(f"[ERROR] Traceback: {traceback.format_exc()}")
         
         # Subscribe ke sniffing events
         sub_id = event_bus.subscribe_sniffing(on_sniffing_data)
@@ -139,7 +145,9 @@ async def ws_sniffing_state(websocket: WebSocket):
                     "heartbeat_status": heartbeat_status
                 })
             except Exception as e:
+                import traceback
                 print(f"[ERROR] ws_sniffing_state send error: {e}")
+                print(f"[ERROR] Traceback: {traceback.format_exc()}")
         
         # Subscribe ke sniffing events untuk real-time updates
         sub_id = event_bus.subscribe_sniffing(on_sniffing_update)

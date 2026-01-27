@@ -26,7 +26,6 @@ class Heartbeat(Base):
     # 1 Nyala (lagi sniff) 
     # 0 (tidak ada modul sniff)
     timestamp = Column(String, nullable=False)
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
 class NmmCfg(Base):
     __tablename__ = "nmmcfg"
@@ -109,7 +108,6 @@ class Crawling(Base):
 
     campaign_id = Column(Integer, ForeignKey("campaign.id"), nullable=True)
     campaign = relationship("Campaign", back_populates="crawlings")
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
 class GPS(Base):
     __tablename__ = "gps"

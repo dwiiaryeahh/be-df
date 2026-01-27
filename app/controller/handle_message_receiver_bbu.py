@@ -10,6 +10,15 @@ from app.service.heartbeat_service import get_heartbeat_by_ip
 from app.service.services import get_frequency, provider_mapping
 from app.service.sniffer_service import insert_sniffer_nmmcfg, reset_nmmcfg
 from app.ws.events import event_bus
+from app.ws import runtime
+
+# Helper function to schedule async tasks from sync context
+def schedule_async_task(coro):
+    """Schedule an async task safely from synchronous context using main event loop"""
+    if runtime.main_loop is not None:
+        asyncio.run_coroutine_threadsafe(coro, runtime.main_loop)
+    else:
+        print("[WARNING] Main event loop not available, skipping async task")
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -89,7 +98,7 @@ def RespUdp(message, addr):
                 "arfcn": heartbeat_data.arfcn,
                 "timestamp": date_now
             }
-            asyncio.run(event_bus.send_heartbeat(heartbeat_data))
+            schedule_async_task(event_bus.send_heartbeat(heartbeat_data))
 
         elif GetCellParaRsp in message:
             save_xml_file(message, source_ip, 'cellpara', "(CellParaRsp)")
@@ -144,7 +153,7 @@ def RespUdp(message, addr):
                 "mode": freq["mode"] if freq else None,
                 "campaign_id": campaign_id
             }
-            asyncio.run(event_bus.send_crawling(crawling_data))
+            schedule_async_task(event_bus.send_crawling(crawling_data))
 
         elif GPSInfoIndi in message:
             latitude = message.split("latitude[")[1].split("]")[0]
@@ -196,7 +205,7 @@ def RespUdp(message, addr):
                         "timestamp": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
                         "ch": "CH-" + ch if ch else None
                     }
-                    asyncio.run(event_bus.send_sniffing(sniffing_data))
+                    schedule_async_task(event_bus.send_sniffing(sniffing_data))
 
             else:
                 print("masuk -1 nih<<<<<<<", message)
@@ -208,7 +217,7 @@ def RespUdp(message, addr):
                     "ip": source_ip,
                     "timestamp": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
                 }
-                asyncio.run(event_bus.send_sniffing(sniffing_complete))
+                schedule_async_task(event_bus.send_sniffing(sniffing_complete))
 
 
         elif "StartSniffer" in message:

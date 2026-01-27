@@ -193,12 +193,15 @@ def parse_xml(xml_path, mode):
     
 def get_frequency(ip):
     db = SessionLocal()
-    heartbeat_data = db.query(Heartbeat).filter(Heartbeat.source_ip == ip).first()
-    if heartbeat_data:
-        return {
-            "arfcn": heartbeat_data.arfcn, 
-            "ul_freq": heartbeat_data.ul_freq, 
-            "dl_freq": heartbeat_data.dl_freq,
-            "mode": heartbeat_data.mode
-        }
-    return None
+    try:
+        heartbeat_data = db.query(Heartbeat).filter(Heartbeat.source_ip == ip).first()
+        if heartbeat_data:
+            return {
+                "arfcn": heartbeat_data.arfcn, 
+                "ul_freq": heartbeat_data.ul_freq, 
+                "dl_freq": heartbeat_data.dl_freq,
+                "mode": heartbeat_data.mode
+            }
+        return None
+    finally:
+        db.close()

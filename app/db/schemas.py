@@ -112,6 +112,7 @@ class CrawlingData(BaseModel):
     imsi: str
     ip: str
     ch: str
+    provider: str | None = None
 
 
 class CampaignCreate(BaseModel):

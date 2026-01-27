@@ -87,7 +87,8 @@ def get_campaign_detail(db: Session, campaign_id: int) -> Dict:
             "ulRssi": c.ulRssi,
             "imsi": c.imsi,
             "ip": c.ip,
-            "ch": c.ch
+            "ch": c.ch,
+            "provider": c.provider,
         }
         for c in crawlings
     ]

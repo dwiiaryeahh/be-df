@@ -80,6 +80,11 @@ class MyApp:
             if runtime.main_loop is not None:
                 break
             time.sleep(0.1)
+        
+        from app.service.heartbeat_service import heartbeat_watcher
+        runtime.main_loop.call_soon_threadsafe(
+            lambda: asyncio.create_task(heartbeat_watcher())
+        )
 
         client_udp()
         print("Server UDP sudah berjalan.........")
