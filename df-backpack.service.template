@@ -1,0 +1,14 @@
+[Unit]
+Description=DF-Backpack Application Service
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User={{USER}}
+WorkingDirectory={{PROJECT_DIR}}
+ExecStart=/bin/bash {{PROJECT_DIR}}/start_app.sh
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
