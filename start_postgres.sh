@@ -70,7 +70,49 @@ CREATE TABLE IF NOT EXISTS heartbeat (
     temp VARCHAR NOT NULL,
     mode VARCHAR NOT NULL,
     ch VARCHAR NOT NULL,
+    band VARCHAR NOT NULL,
+    arfcn VARCHAR,
+    mcc VARCHAR,
+    mnc VARCHAR,
+    ul_freq VARCHAR,
+    dl_freq VARCHAR,
+    sniff_status INTEGER DEFAULT 1,
+    sniff_scan INTEGER DEFAULT 1,
     timestamp VARCHAR NOT NULL
+);
+
+-- Create nmmcfg table
+CREATE TABLE IF NOT EXISTS nmmcfg (
+    id SERIAL PRIMARY KEY,
+    ip VARCHAR,
+    time VARCHAR,
+    arfcn INTEGER,
+    operator VARCHAR,
+    dl_freq FLOAT DEFAULT 0.0,
+    ul_freq FLOAT DEFAULT 0.0,
+    pci VARCHAR,
+    rsrp VARCHAR,
+    band INTEGER,
+    ch VARCHAR
+);
+
+-- Create operator table
+CREATE TABLE IF NOT EXISTS operator (
+    id SERIAL PRIMARY KEY,
+    mcc VARCHAR,
+    mnc VARCHAR,
+    brand VARCHAR
+);
+
+-- Create freq_operator table
+CREATE TABLE IF NOT EXISTS freq_operator (
+    id SERIAL PRIMARY KEY,
+    arfcn INTEGER,
+    provider_id INTEGER REFERENCES operator(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    band INTEGER,
+    dl_freq FLOAT DEFAULT 0.0,
+    ul_freq FLOAT DEFAULT 0.0,
+    mode VARCHAR
 );
 
 -- Create campaign table
@@ -95,8 +137,12 @@ CREATE TABLE IF NOT EXISTS crawling (
     "taType" VARCHAR NOT NULL,
     "ulCqi" VARCHAR NOT NULL,
     "ulRssi" VARCHAR NOT NULL,
+    ch VARCHAR,
+    provider VARCHAR,
     imsi VARCHAR NOT NULL,
     ip VARCHAR NOT NULL,
+    lat VARCHAR,
+    long VARCHAR,
     campaign_id INTEGER,
     FOREIGN KEY (campaign_id) REFERENCES campaign(id) ON DELETE CASCADE
 );
@@ -105,6 +151,23 @@ CREATE TABLE IF NOT EXISTS crawling (
 CREATE INDEX IF NOT EXISTS idx_crawling_imsi ON crawling(imsi);
 CREATE INDEX IF NOT EXISTS idx_crawling_ip ON crawling(ip);
 CREATE INDEX IF NOT EXISTS idx_crawling_campaign_id ON crawling(campaign_id);
+
+-- Create gps table
+CREATE TABLE IF NOT EXISTS gps (
+    id SERIAL PRIMARY KEY,
+    latitude VARCHAR NOT NULL,
+    longitude VARCHAR NOT NULL,
+    timestamp VARCHAR NOT NULL
+);
+
+-- Create license table
+CREATE TABLE IF NOT EXISTS license (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR NOT NULL,
+    number VARCHAR NOT NULL UNIQUE,
+    status VARCHAR NOT NULL,
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL
+);
 
 EOF
 
