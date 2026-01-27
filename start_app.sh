@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Configuration
-PROJECT_DIR="/home/$USER/df-backpack" # Adjust this path as needed
+PROJECT_DIR="/home/$USER/Documents/backend-df" # Adjust this path as needed
 VENV_PATH="$PROJECT_DIR/venv"
 PYTHON_BIN="$VENV_PATH/bin/python"
 APP_MAIN="$PROJECT_DIR/run.py"
