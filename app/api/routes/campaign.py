@@ -59,6 +59,8 @@ def get_campaign(campaign_id: int, db: Session = Depends(get_db)):
             provider=data["provider"],
             status=data["status"],
             created_at=data["created_at"],
+            start_scan=data.get("start_scan"),
+            stop_scan=data.get("stop_scan"),
             crawlings=data["crawlings"]
         )
     

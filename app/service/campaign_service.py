@@ -18,6 +18,8 @@ def list_campaigns(db: Session) -> Dict:
             "provider": campaign.provider,
             "status": campaign.status,
             "created_at": campaign.created_at.isoformat() if campaign.created_at else None,
+            "start_scan": campaign.start_scan.isoformat() if campaign.start_scan else None,
+            "stop_scan": campaign.stop_scan.isoformat() if campaign.stop_scan else None,
             "crawling_count": crawling_count
         })
     
@@ -30,11 +32,14 @@ def list_campaigns(db: Session) -> Dict:
 
 
 def create_campaign(db: Session, name: str, imsi: str, provider: str) -> Dict:
+    from datetime import datetime
+    
     campaign = Campaign(
         name=name,
         imsi=imsi,
         provider=provider,
-        status="started"
+        status="started",
+        start_scan=datetime.now()
     )
     
     try:
@@ -51,7 +56,9 @@ def create_campaign(db: Session, name: str, imsi: str, provider: str) -> Dict:
                 "imsi": campaign.imsi,
                 "provider": campaign.provider,
                 "status": campaign.status,
-                "created_at": campaign.created_at.isoformat() if campaign.created_at else None
+                "created_at": campaign.created_at.isoformat() if campaign.created_at else None,
+                "start_scan": campaign.start_scan.isoformat() if campaign.start_scan else None,
+                "stop_scan": campaign.stop_scan.isoformat() if campaign.stop_scan else None
             }
         }
     except Exception as e:
@@ -103,12 +110,16 @@ def get_campaign_detail(db: Session, campaign_id: int) -> Dict:
             "provider": campaign.provider,
             "status": campaign.status,
             "created_at": campaign.created_at.isoformat() if campaign.created_at else None,
+            "start_scan": campaign.start_scan.isoformat() if campaign.start_scan else None,
+            "stop_scan": campaign.stop_scan.isoformat() if campaign.stop_scan else None,
             "crawlings": crawling_data
         }
     }
 
 
 def update_campaign_status(db: Session, campaign_id: int, new_status: str) -> Dict:
+    from datetime import datetime
+    
     campaign = db.query(Campaign).filter(Campaign.id == campaign_id).first()
     
     if not campaign:
@@ -120,6 +131,9 @@ def update_campaign_status(db: Session, campaign_id: int, new_status: str) -> Di
     
     try:
         campaign.status = new_status
+        # Set stop_scan timestamp when status is stopped
+        if new_status.lower() in ["stopped", "completed", "failed"]:
+            campaign.stop_scan = datetime.now()
         db.commit()
         db.refresh(campaign)
         
@@ -132,7 +146,9 @@ def update_campaign_status(db: Session, campaign_id: int, new_status: str) -> Di
                 "imsi": campaign.imsi,
                 "provider": campaign.provider,
                 "status": campaign.status,
-                "created_at": campaign.created_at.isoformat() if campaign.created_at else None
+                "created_at": campaign.created_at.isoformat() if campaign.created_at else None,
+                "start_scan": campaign.start_scan.isoformat() if campaign.start_scan else None,
+                "stop_scan": campaign.stop_scan.isoformat() if campaign.stop_scan else None
             }
         }
     except Exception as e:

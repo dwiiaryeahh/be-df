@@ -4,6 +4,17 @@ from sqlalchemy.orm import relationship
 from .database import Base
 
 
+class Target(Base):
+    __tablename__ = "target"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    imsi = Column(String, nullable=False)
+    alert_status = Column(String, nullable=True)
+    target_status = Column(String, nullable=True)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
 class Heartbeat(Base):
     __tablename__ = "heartbeat"
 
@@ -49,6 +60,7 @@ class Operator(Base):
     mcc = Column(String, nullable=True)
     mnc = Column(String, nullable=True)
     brand = Column(String, nullable=True)
+    ip = Column(String, nullable=True)
 
     # relasi ke freq_operator
     freqs = relationship(
@@ -83,6 +95,9 @@ class Campaign(Base):
     provider = Column(String, nullable=False)
     status = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    mode = Column(String, nullable=True)
+    start_scan = Column(DateTime(timezone=True), nullable=True)
+    stop_scan = Column(DateTime(timezone=True), nullable=True)
 
     crawlings = relationship("Crawling", back_populates="campaign")
 

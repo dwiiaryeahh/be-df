@@ -135,6 +135,8 @@ class CampaignDetail(BaseModel):
     provider: str
     status: str | None
     created_at: str
+    start_scan: str | None = None
+    stop_scan: str | None = None
     crawlings: List[CrawlingData] = []
 
 
@@ -146,6 +148,8 @@ class CampaignListItem(BaseModel):
     provider: str
     status: str | None
     created_at: str
+    start_scan: str | None = None
+    stop_scan: str | None = None
     crawling_count: int = 0
 
 
@@ -155,3 +159,51 @@ class CampaignListResponse(BaseModel):
     message: str
     data: List[CampaignListItem]
     total: int
+
+
+# ==========================================
+# Target Models - Untuk endpoint target
+# ==========================================
+
+class TargetCreate(BaseModel):
+    """Target Create - Request untuk membuat target baru"""
+    name: str = Field(..., description="Nama target")
+    imsi: str = Field(..., description="IMSI target")
+    alert_status: Optional[str] = Field(None, description="Status alert")
+    target_status: Optional[str] = Field(None, description="Status target")
+
+
+class TargetUpdate(BaseModel):
+    """Target Update - Request untuk update target"""
+    name: Optional[str] = Field(None, description="Nama target")
+    imsi: Optional[str] = Field(None, description="IMSI target")
+    alert_status: Optional[str] = Field(None, description="Status alert")
+    target_status: Optional[str] = Field(None, description="Status target")
+
+
+class TargetResponse(BaseModel):
+    """Target Response - Response untuk single target"""
+    id: int
+    name: str
+    imsi: str
+    alert_status: Optional[str]
+    target_status: Optional[str]
+    created_at: str
+    updated_at: str
+
+
+class TargetListResponse(BaseModel):
+    """Target List Response - Response untuk list target"""
+    status: str
+    message: str
+    data: List[TargetResponse]
+    total: int
+
+
+class TargetImportResponse(BaseModel):
+    """Target Import Response - Response untuk import target dari XLSX"""
+    status: str
+    message: str
+    imported: int
+    failed: int
+    errors: List[str] = []
