@@ -96,6 +96,7 @@ class Campaign(Base):
     status = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     mode = Column(String, nullable=True)
+    duration = Column(String, nullable=True)
     start_scan = Column(DateTime(timezone=True), nullable=True)
     stop_scan = Column(DateTime(timezone=True), nullable=True)
 

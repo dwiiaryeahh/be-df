@@ -31,13 +31,14 @@ def list_campaigns(db: Session) -> Dict:
     }
 
 
-def create_campaign(db: Session, name: str, imsi: str, provider: str) -> Dict:
+def create_campaign(db: Session, name: str, imsi: str, provider: str, mode: str) -> Dict:
     from datetime import datetime
     
     campaign = Campaign(
         name=name,
         imsi=imsi,
         provider=provider,
+        mode=mode,
         status="started",
         start_scan=datetime.now()
     )
@@ -55,6 +56,7 @@ def create_campaign(db: Session, name: str, imsi: str, provider: str) -> Dict:
                 "name": campaign.name,
                 "imsi": campaign.imsi,
                 "provider": campaign.provider,
+                "mode": campaign.mode,
                 "status": campaign.status,
                 "created_at": campaign.created_at.isoformat() if campaign.created_at else None,
                 "start_scan": campaign.start_scan.isoformat() if campaign.start_scan else None,
@@ -109,6 +111,7 @@ def get_campaign_detail(db: Session, campaign_id: int) -> Dict:
             "imsi": campaign.imsi,
             "provider": campaign.provider,
             "status": campaign.status,
+            "mode": campaign.mode,
             "created_at": campaign.created_at.isoformat() if campaign.created_at else None,
             "start_scan": campaign.start_scan.isoformat() if campaign.start_scan else None,
             "stop_scan": campaign.stop_scan.isoformat() if campaign.stop_scan else None,
@@ -146,6 +149,7 @@ def update_campaign_status(db: Session, campaign_id: int, new_status: str) -> Di
                 "imsi": campaign.imsi,
                 "provider": campaign.provider,
                 "status": campaign.status,
+                "mode": campaign.mode,
                 "created_at": campaign.created_at.isoformat() if campaign.created_at else None,
                 "start_scan": campaign.start_scan.isoformat() if campaign.start_scan else None,
                 "stop_scan": campaign.stop_scan.isoformat() if campaign.stop_scan else None

@@ -117,9 +117,10 @@ class CrawlingData(BaseModel):
 
 class CampaignCreate(BaseModel):
     """Campaign Create - Request untuk membuat campaign baru (seperti start scan)"""
-    name: str = Field(..., description="Nama campaign")
-    imsi: str = Field(..., description="IMSI untuk scanning")
+    name: str = Field(default="", description="Nama campaign")
+    imsi: str = Field(default="", description="IMSI untuk scanning")
     provider: str = Field(default="", description="Provider/Operator")
+    mode: str = Field(default="" ,description="WB: Whitelist, Blacklist, All | DF : DF")
 
 
 class CampaignUpdate(BaseModel):
@@ -133,6 +134,7 @@ class CampaignDetail(BaseModel):
     name: str
     imsi: str
     provider: str
+    mode: str
     status: str | None
     created_at: str
     start_scan: str | None = None
@@ -207,3 +209,33 @@ class TargetImportResponse(BaseModel):
     imported: int
     failed: int
     errors: List[str] = []
+
+
+# ==========================================
+# Command Models - Untuk unified command endpoint
+# ==========================================
+
+class CommandRequest(BaseModel):
+    """Unified Command Request - Request untuk endpoint /command dengan topic-based routing"""
+    ip: Optional[str] = Field(None, description="IP device (optional, jika kosong akan execute ke semua IP)")
+    all: Optional[bool] = Field(False, description="Execute ke semua IP")
+    provider: Optional[str] = Field(None, description="Provider untuk SetAppCfgExt dan SetCellPara (telkomsel, indosat, xl)")
+    imsi: Optional[str] = Field(None, description="IMSI untuk SetBlackList dan GetBlackList")
+
+
+class CommandResult(BaseModel):
+    """Command Result - Detail hasil command untuk satu IP"""
+    ip: str
+    status: str
+    error: Optional[str] = None
+    file_exists: Optional[bool] = None
+    file_path: Optional[str] = None
+    message: Optional[str] = None
+    provider: Optional[str] = None
+
+
+class CommandResponse(BaseModel):
+    """Unified Command Response - Response untuk endpoint /command"""
+    status: str
+    last_checked: str
+    details: List[CommandResult]

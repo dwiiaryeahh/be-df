@@ -1,7 +1,3 @@
-"""
-Campaign endpoints - Campaign management (List, Create, Detail, Update)
-Tags: Campaign
-"""
 from typing import Optional
 from fastapi import APIRouter, HTTPException, Depends, Query
 from fastapi.responses import StreamingResponse
@@ -38,7 +34,7 @@ def list_campaign(db: Session = Depends(get_db)):
 
 @router.post("/campaign/start", tags=["Campaign"])
 def campaign_start(req: CampaignCreate, db: Session = Depends(get_db)):
-    result = create_campaign(db, req.name, req.imsi, req.provider)
+    result = create_campaign(db, req.name, req.imsi, req.provider, req.mode)
     
     if result["status"] == "success":
         return result
