@@ -10,9 +10,6 @@ import xml.etree.ElementTree as ET
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# -------------------------
-# Helper: Ambil IP dari DB
-# -------------------------
 def get_all_ips_db(db: Session) -> List[str]:
     """Mengambil semua IP dari table heartbeat"""
     rows = db.query(Heartbeat.source_ip).all()
@@ -25,6 +22,32 @@ def get_ips_with_sniffer_enabled(db: Session) -> List[str]:
     ).all()
     return [r[0] for r in rows]
 
+# LOGIC GET IP FOR WHITELIST/BLACKLIST PROCESS
+def get_exception_ips(db: Session) -> dict:
+    exception_ips = []
+    other_ips = []
+    
+    operator_ips = set()
+    operators = db.query(Operator).all()
+    for op in operators:
+        if op.ip:
+            operator_ips.add(op.ip)
+    
+    heartbeats = db.query(Heartbeat).all()
+    
+    for hb in heartbeats:
+        if hb.source_ip in operator_ips:
+            exception_ips.append(hb.source_ip)
+        else:
+            other_ips.append(hb.source_ip)
+    
+    # logger.debug(f"Exception IPs (from Operator table): {exception_ips}")
+    # logger.debug(f"Other IPs: {other_ips}")
+    
+    return {
+        'exception_ips': exception_ips,
+        'other_ips': other_ips
+    }
 
 def validate_token(token: str) -> bool:
     """Validasi token"""
@@ -97,6 +120,45 @@ def get_provider_data(db: Session, arfcn: int):
         "mode": row.mode,
     }
 
+def get_provider_data_multiple(db: Session, arfcn_raw: str):
+    if not arfcn_raw:
+        return {
+            "dl_freq": "",
+            "ul_freq": ""
+        }
+    
+    arfcn_list = [a.strip() for a in str(arfcn_raw).split(',')]
+    
+    dl_freq_list = []
+    ul_freq_list = []
+    
+    for arfcn_str in arfcn_list:
+        try:
+            arfcn_int = int(arfcn_str)
+            provider_data = get_provider_data(db, arfcn_int)
+            
+            if provider_data.get("dl_freq") is not None:
+                dl_freq_list.append(str(provider_data["dl_freq"]))
+            else:
+                dl_freq_list.append("-")
+                
+            if provider_data.get("ul_freq") is not None:
+                ul_freq_list.append(str(provider_data["ul_freq"]))
+            else:
+                ul_freq_list.append("-")
+                
+        except (ValueError, TypeError):
+            dl_freq_list.append("-")
+            ul_freq_list.append("-")
+    
+    dl_freq_result = ",".join(dl_freq_list) if len(dl_freq_list) > 1 else (dl_freq_list[0] if dl_freq_list else "")
+    ul_freq_result = ",".join(ul_freq_list) if len(ul_freq_list) > 1 else (ul_freq_list[0] if ul_freq_list else "")
+    
+    return {
+        "dl_freq": dl_freq_result,
+        "ul_freq": ul_freq_result
+    }
+
 def provider_mapping(imsi: str) -> str:
     if imsi.startswith("51010"):
         return "Telkomsel"
@@ -128,7 +190,6 @@ def parse_xml(xml_path, mode):
                 mccgsm_values.append(mccgsm)
 
                 mncgsm = itemgms.find('mnc').text.strip()
-                # Format MNC to ensure two digits
                 mncgsm_values.append(mncgsm.zfill(2))
 
                 arfcngsm = itemgms.find("./arfcnList/arfcn").text

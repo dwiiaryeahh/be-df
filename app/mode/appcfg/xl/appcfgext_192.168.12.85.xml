@@ -4,7 +4,7 @@
     <workTypeCfg>
         <workType> 0</workType>
         <followParaValidIndi>false </followParaValidIndi>
-        <imeiTry>false </imeiTry>
+        <imeiTry>true </imeiTry>
         <tacUpdatePeriodInSec> 360</tacUpdatePeriodInSec>
         <cellRipRptEn>false </cellRipRptEn>
         <ueRptWithMeas>true </ueRptWithMeas>

@@ -1,5 +1,5 @@
 # app/db/models.py
-from sqlalchemy import Boolean, Column, Float, Integer, String, DateTime, ForeignKey, func
+from sqlalchemy import Boolean, Column, Float, Integer, String, DateTime, ForeignKey, func, JSON
 from sqlalchemy.orm import relationship
 from .database import Base
 
@@ -99,6 +99,7 @@ class Campaign(Base):
     duration = Column(String, nullable=True)
     start_scan = Column(DateTime(timezone=True), nullable=True)
     stop_scan = Column(DateTime(timezone=True), nullable=True)
+    target_info = Column(JSON, nullable=True)
 
     crawlings = relationship("Crawling", back_populates="campaign")
 
@@ -121,6 +122,10 @@ class Crawling(Base):
     
     lat = Column(String, nullable=True)
     long = Column(String, nullable=True)
+    
+    count = Column(Integer, nullable=True, default=0)
+    imei = Column(String, nullable=True)
+    msisdn = Column(String, nullable=True)
 
     campaign_id = Column(Integer, ForeignKey("campaign.id"), nullable=True)
     campaign = relationship("Campaign", back_populates="crawlings")
@@ -141,3 +146,10 @@ class License(Base):
     number = Column(String, unique=True, nullable=False)
     status = Column(String, nullable=False)
     expires_at = Column(DateTime(timezone=True), nullable=False)
+    
+class WbStatus(Base):
+    __tablename__ = "wb_status"
+
+    id = Column(Integer, primary_key=True, index=True)
+    status = Column(Boolean, nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

@@ -3,6 +3,7 @@ from fastapi import APIRouter, HTTPException, Depends, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 import io
+import asyncio
 
 from app.db.database import get_db
 from app.db.schemas import (
@@ -18,8 +19,8 @@ from app.service.export_service import generate_pdf, generate_excel
 router = APIRouter()
 
 @router.get("/campaign", response_model=CampaignListResponse, tags=["Campaign"])
-def list_campaign(db: Session = Depends(get_db)):
-    result = list_campaigns(db)
+def list_campaign(mode: Optional[str] = None, db: Session = Depends(get_db)):
+    result = list_campaigns(db, mode=mode)
     
     if result["status"] == "success":
         return CampaignListResponse(
@@ -33,8 +34,8 @@ def list_campaign(db: Session = Depends(get_db)):
 
 
 @router.post("/campaign/start", tags=["Campaign"])
-def campaign_start(req: CampaignCreate, db: Session = Depends(get_db)):
-    result = create_campaign(db, req.name, req.imsi, req.provider, req.mode)
+async def campaign_start(req: CampaignCreate, db: Session = Depends(get_db)):
+    result = await create_campaign(db, req.name, req.imsi, req.provider, req.mode, req.duration)
     
     if result["status"] == "success":
         return result
@@ -53,7 +54,9 @@ def get_campaign(campaign_id: int, db: Session = Depends(get_db)):
             name=data["name"],
             imsi=data["imsi"],
             provider=data["provider"],
+            mode=data["mode"],
             status=data["status"],
+            duration=data.get("duration"),
             created_at=data["created_at"],
             start_scan=data.get("start_scan"),
             stop_scan=data.get("stop_scan"),
@@ -64,13 +67,23 @@ def get_campaign(campaign_id: int, db: Session = Depends(get_db)):
 
 
 @router.put("/campaign/{campaign_id}/stop", tags=["Campaign"])
-def campaign_stop(campaign_id: int, req: CampaignUpdate, db: Session = Depends(get_db)):
-    result = update_campaign_status(db, campaign_id, req.status)
+async def campaign_stop(campaign_id: int, db: Session = Depends(get_db)):
+    """
+    Stop campaign: update status to 'stopped', stop timer, and stop all BBU cells
+    """
+    from app.service.campaign_service import stop_campaign
+    
+    result = await stop_campaign(db, campaign_id)
     
     if result["status"] == "success":
         return result
     
-    raise HTTPException(status_code=404, detail=result["message"])
+    # If error is just "not found", return 404
+    if "tidak ditemukan" in result["message"]:
+        raise HTTPException(status_code=404, detail=result["message"])
+        
+    raise HTTPException(status_code=500, detail=result["message"])
+
 
 
 @router.get("/campaign/{campaign_id}/export/{export_type}", tags=["Campaign"])

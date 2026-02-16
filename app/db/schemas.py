@@ -113,14 +113,18 @@ class CrawlingData(BaseModel):
     ip: str
     ch: str
     provider: str | None = None
+    count: int | None = None
+    alert_status: str | None = None
+    alert_name: str | None = None
 
 
 class CampaignCreate(BaseModel):
     """Campaign Create - Request untuk membuat campaign baru (seperti start scan)"""
     name: str = Field(default="", description="Nama campaign")
     imsi: str = Field(default="", description="IMSI untuk scanning")
-    provider: str = Field(default="", description="Provider/Operator")
     mode: str = Field(default="" ,description="WB: Whitelist, Blacklist, All | DF : DF")
+    provider: Optional[str] = Field(default="", description="Provider/Operator")
+    duration: Optional[str] = Field(None, description="Duration in MM:SS format (e.g., 05:00 for 5 minutes)")
 
 
 class CampaignUpdate(BaseModel):
@@ -136,6 +140,7 @@ class CampaignDetail(BaseModel):
     provider: str
     mode: str
     status: str | None
+    duration: str | None = None
     created_at: str
     start_scan: str | None = None
     stop_scan: str | None = None
@@ -149,6 +154,7 @@ class CampaignListItem(BaseModel):
     imsi: str
     provider: str
     status: str | None
+    mode: str | None
     created_at: str
     start_scan: str | None = None
     stop_scan: str | None = None
@@ -173,6 +179,7 @@ class TargetCreate(BaseModel):
     imsi: str = Field(..., description="IMSI target")
     alert_status: Optional[str] = Field(None, description="Status alert")
     target_status: Optional[str] = Field(None, description="Status target")
+    campaign_id: Optional[int] = Field(None, description="Optional campaign ID untuk integrasi dengan campaign yang sedang berjalan")
 
 
 class TargetUpdate(BaseModel):
@@ -193,13 +200,17 @@ class TargetResponse(BaseModel):
     created_at: str
     updated_at: str
 
+class TargetSingleResponse(BaseModel):
+    status: str
+    message: str
+    data: TargetResponse
 
 class TargetListResponse(BaseModel):
     """Target List Response - Response untuk list target"""
     status: str
     message: str
     data: List[TargetResponse]
-    total: int
+    total: Optional[int]
 
 
 class TargetImportResponse(BaseModel):
@@ -216,11 +227,12 @@ class TargetImportResponse(BaseModel):
 # ==========================================
 
 class CommandRequest(BaseModel):
-    """Unified Command Request - Request untuk endpoint /command dengan topic-based routing"""
-    ip: Optional[str] = Field(None, description="IP device (optional, jika kosong akan execute ke semua IP)")
-    all: Optional[bool] = Field(False, description="Execute ke semua IP")
-    provider: Optional[str] = Field(None, description="Provider untuk SetAppCfgExt dan SetCellPara (telkomsel, indosat, xl)")
-    imsi: Optional[str] = Field(None, description="IMSI untuk SetBlackList dan GetBlackList")
+    """Command Request - Mode-based bundled commands"""
+    mode: str = Field(..., description="Mode: whitelist, blacklist, all, df")
+    imsi: Optional[str] = Field(None, description="IMSI target (space-separated for multiple)")
+    duration: Optional[str] = Field(None, description="Duration in MM:SS format")
+    provider: Optional[str] = Field(None, description="Provider for df mode")
+    ip: Optional[str] = Field(None, description="Specific IP (optional, default: all IPs)")
 
 
 class CommandResult(BaseModel):

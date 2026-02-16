@@ -1,0 +1,166 @@
+<?xml version='1.0' encoding = 'UTF-8' standalone = 'no' ?>
+<content>
+    <workTypeCfgActive>true </workTypeCfgActive>
+    <workTypeCfg>
+        <workType> 5</workType>
+        <followParaValidIndi>true </followParaValidIndi>
+        <imeiTry>true </imeiTry>
+        <tacUpdatePeriodInSec> 360</tacUpdatePeriodInSec>
+        <cellRipRptEn>false </cellRipRptEn>
+        <ueRptWithMeas>true </ueRptWithMeas>
+        <tacLacMax> 65535</tacLacMax>
+        <tacLacMin> 1</tacLacMin>
+        <rptVerbEn>false </rptVerbEn>
+    </workTypeCfg>
+    <cmmUeRedirectCfgActive>false </cmmUeRedirectCfgActive>
+    <cmmUeRedirectCfg>
+        <rejCause> 16</rejCause>
+        <redirectItem itemCnt = "3">
+            <item>
+                <mcc> 0</mcc>
+                <mnc> 0</mnc>
+                <rat>REDIRECT_LTE</rat>
+                <band> 3</band>
+                <fcn> 1850</fcn>
+            </item>
+            <item>
+                <mcc> 0</mcc>
+                <mnc> 0</mnc>
+                <rat>REDIRECT_LTE</rat>
+                <band> 0</band>
+                <fcn> 1850</fcn>
+            </item>
+            <item>
+                <mcc> 0</mcc>
+                <mnc> 0</mnc>
+                <rat>REDIRECT_NONE</rat>
+                <band> 0</band>
+                <fcn> 1850</fcn>
+            </item>
+        </redirectItem>
+    </cmmUeRedirectCfg>
+    <blkUeRedirectCfgActive>false </blkUeRedirectCfgActive>
+    <blkUeRedirectCfg>
+        <rejCause> 13</rejCause>
+        <redirectItem itemCnt = "1">
+            <item>
+                <mcc> 0</mcc>
+                <mnc> 0</mnc>
+                <rat>REDIRECT_LTE</rat>
+                <band> 39</band>
+                <fcn> 38400</fcn>
+                <rejType> 0</rejType>
+                <rejcause> 0</rejcause>
+            </item>
+        </redirectItem>
+    </blkUeRedirectCfg>
+    <whiteUeRedirectCfgActive>true </whiteUeRedirectCfgActive>
+    <whiteUeRedirectCfg>
+        <rejCause> 16</rejCause>
+        <redirectItem itemCnt = "2">
+            <item>
+                <mcc> 0</mcc>
+                <mnc> 0</mnc>
+                <rat>REDIRECT_GSM</rat>
+                <band> 3</band>
+                <fcn> 779</fcn>
+            </item>
+            <item>
+                <mcc> 0</mcc>
+                <mnc> 0</mnc>
+                <rat>REDIRECT_GSM</rat>
+                <band> 3</band>
+                <fcn> 782</fcn>
+            </item>
+        </redirectItem>
+    </whiteUeRedirectCfg>
+    <loopFcnCfgEn>false </loopFcnCfgEn>
+    <loopFcnCfg>
+        <loopPeriodSecCnt> 0</loopPeriodSecCnt>
+        <item itemCnt = "0">
+        </item>
+    </loopFcnCfg>
+    <extCfgEn>false </extCfgEn>
+    <ext>
+        <ankWlEn>false </ankWlEn>
+        <sntpEn>false </sntpEn>
+        <sntpSvr></sntpSvr>
+        <sntpPort> 0</sntpPort>
+        <ftpEn>false </ftpEn>
+        <ftp>
+            <url></url>
+            <port> 0</port>
+            <usr></usr>
+            <pswd></pswd>
+        </ftp>
+        <bkFtpEn>false </bkFtpEn>
+        <bkFtp>
+            <url></url>
+            <port> 0</port>
+            <usr></usr>
+            <pswd></pswd>
+        </bkFtp>
+        <rptPeriodInSec> 0</rptPeriodInSec>
+        <hbEn>false </hbEn>
+        <hbSvrIp></hbSvrIp>
+        <bkHbSvrOn>false </bkHbSvrOn>
+        <bkHbSvrIp></bkHbSvrIp>
+        <swDlEn>false </swDlEn>
+        <swVer>
+            <url></url>
+            <port> 0</port>
+            <usr></usr>
+            <pswd></pswd>
+        </swVer>
+        <resetPeriodOn>false </resetPeriodOn>
+        <resetTime></resetTime>
+        <plmn></plmn>
+        <cityCode> 0</cityCode>
+        <rfParaEn>false </rfParaEn>
+        <rfPara>
+            <sib1InfoInc>false </sib1InfoInc>
+            <mcc> 0</mcc>
+            <mnc> 0</mnc>
+            <lacTac> 0</lacTac>
+            <cellId> 0</cellId>
+            <gsmIdx> 0</gsmIdx>
+            <fcn> 0</fcn>
+            <txPwr> 0</txPwr>
+            <rxGain> 0</rxGain>
+            <ratOption> 0</ratOption>
+            <phyCellCode> 0</phyCellCode>
+            <gsmFcn2> 0</gsmFcn2>
+            <nrFcn> 0</nrFcn>
+            <nrTac> 0</nrTac>
+            <plmn itemCnt = "0"></plmn>
+            <nrListenFcn> 0</nrListenFcn>
+        </rfPara>
+        <syncCfgEn>false </syncCfgEn>
+        <sync>
+            <mode> 0</mode>
+            <frmOfstInUsOrListenFcn> 0</frmOfstInUsOrListenFcn>
+        </sync>
+    </ext>
+    <extRfEn>false </extRfEn>
+    <extRf>
+        <cell2En>false </cell2En>
+        <cell2Fcn> 0</cell2Fcn>
+        <rmtSib1En>false </rmtSib1En>
+        <sib1Band itemCnt = "0"></sib1Band>
+    </extRf>
+    <repeatCfgEn>false </repeatCfgEn>
+    <repeatCfg>
+        <redirecCnt> 0</redirecCnt>
+        <redirecTmr> 0</redirecTmr>
+        <repeatFilterCnt> 0</repeatFilterCnt>
+        <repeatFilterTmr> 0</repeatFilterTmr>
+    </repeatCfg>
+    <extFtpOp> 0</extFtpOp>
+    <extFtpUploadPeriodSec> 0</extFtpUploadPeriodSec>
+    <extFtpCfg>
+        <url></url>
+        <port> 0</port>
+        <usr></usr>
+        <pswd></pswd>
+    </extFtpCfg>
+</content>

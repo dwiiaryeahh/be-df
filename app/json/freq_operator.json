@@ -502,5 +502,13 @@
         "mode": "GSM",
         "provider_id": 8,
         "ul_freq": 912.8
+    },
+    {
+        "arfcn": 1650,
+        "band": 3,
+        "dl_freq": 1850.0,
+        "mode": "FDD-LTE",
+        "provider_id": 7,
+        "ul_freq": 1755.0
     }
 ]

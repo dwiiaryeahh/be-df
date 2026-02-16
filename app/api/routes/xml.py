@@ -4,7 +4,7 @@ import time
 import os
 import xml.etree.ElementTree as ET
 from app.db.database import get_db
-from app.service.services import get_all_ips_db, get_send_command_instance, XML_TYPE_MAP, build_xml_path
+from app.service.utils_service import get_all_ips_db, get_send_command_instance, XML_TYPE_MAP, build_xml_path
 from app.service.heartbeat_service import update_heartbeat
 from app.config.utils import SetAppCfgExt, SetCellPara
 

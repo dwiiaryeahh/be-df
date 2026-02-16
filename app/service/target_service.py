@@ -7,14 +7,43 @@ from app.db.models import Target
 from typing import List, Dict, Any
 import openpyxl
 from io import BytesIO
+from app.service.utils_service import get_all_ips_db
+from app.utils.logger import setup_logger
+
+logger = setup_logger("[TARGET SERVICE]")
+
+async def stop_exeption_ip(db: Session, target_imsi: str):
+    from app.db.models import Operator
+    from sqlalchemy import func
+    
+    target_mcc = target_imsi[:3]
+    target_mnc = target_imsi[3:5]
+    
+    matching_operators = db.query(Operator).filter(
+        func.concat(Operator.mcc, Operator.mnc) == f"{target_mcc}{target_mnc}",
+        Operator.ip.isnot(None)
+    ).all()
+    
+    if not matching_operators:
+        print(f"[Target Service] No matching operators found for MCC+MNC: {target_mcc}{target_mnc}")
+        return
+    
+    matching_ips = [op.ip for op in matching_operators]
+        
+    from app.service.command_service import handle_stop_cell
+    await handle_stop_cell(matching_ips)
+    
+    logger.info(f"[Target Service] StopCell - Add Target {len(matching_ips)} exception channels")
 
 
-def list_targets(db: Session) -> Dict[str, Any]:
-    """
-    Get list of all targets
-    """
+def list_targets(db: Session, target_status: str = None) -> Dict[str, Any]:
     try:
-        targets = db.query(Target).order_by(Target.created_at.desc()).all()
+        query = db.query(Target).order_by(Target.created_at.desc())
+        
+        if target_status:
+            query = query.filter(Target.target_status == target_status)
+        
+        targets = query.all()
         
         target_list = []
         for target in targets:
@@ -28,9 +57,13 @@ def list_targets(db: Session) -> Dict[str, Any]:
                 "updated_at": target.updated_at.isoformat() if target.updated_at else ""
             })
         
+        message = "Targets retrieved successfully"
+        if target_status:
+            message = f"Targets with status '{target_status}' retrieved successfully"
+        
         return {
             "status": "success",
-            "message": "Targets retrieved successfully",
+            "message": message,
             "data": target_list,
             "total": len(target_list)
         }
@@ -43,12 +76,8 @@ def list_targets(db: Session) -> Dict[str, Any]:
         }
 
 
-def create_target(db: Session, name: str, imsi: str, alert_status: str = None, target_status: str = None) -> Dict[str, Any]:
-    """
-    Create a new target
-    """
+async def create_target(db: Session, name: str, imsi: str, alert_status: str = None, target_status: str = None, campaign_id: int = None) -> Dict[str, Any]:
     try:
-        # Check if IMSI already exists
         existing_target = db.query(Target).filter(Target.imsi == imsi).first()
         if existing_target:
             return {
@@ -66,6 +95,54 @@ def create_target(db: Session, name: str, imsi: str, alert_status: str = None, t
         db.add(new_target)
         db.commit()
         db.refresh(new_target)
+        
+        await stop_exeption_ip(db, imsi)
+        
+        if campaign_id:
+            from app.db.models import Campaign
+            from app.service.utils_service import get_exception_ips
+            from app.service.command_service import handle_set_blacklist, handle_set_whitelist
+            import asyncio
+            
+            campaign = db.query(Campaign).filter(Campaign.id == campaign_id).first()
+            if campaign and campaign.status == "started":
+                all_targets = db.query(Target).all()
+                target_info_list = []
+                for target in all_targets:
+                    target_info_list.append({
+                        "name": target.name,
+                        "imsi": target.imsi,
+                        "alert_status": target.alert_status,
+                        "target_status": target.target_status
+                    })
+                campaign.target_info = target_info_list
+                
+                active_targets = db.query(Target).filter(Target.target_status == 'Active').all()
+                active_imsis = [t.imsi for t in active_targets]
+                campaign.imsi = ",".join(active_imsis)
+                db.commit()
+                
+                channels = get_exception_ips(db)
+                exception_ips = channels.get('exception_ips', [])
+                other_ips = channels.get('other_ips', [])
+                
+                all_imsis_str = campaign.imsi.replace(',', ' ')
+                mode = campaign.mode.lower() if campaign.mode else ""
+                
+                async def execute_commands():
+                    if mode == "whitelist":
+                        if exception_ips:
+                            await handle_set_blacklist(exception_ips, all_imsis_str)
+                        if other_ips:
+                            await handle_set_whitelist(other_ips, all_imsis_str)
+                    elif mode == "blacklist":
+                        if other_ips:
+                            await handle_set_blacklist(other_ips, all_imsis_str)
+                        if exception_ips:
+                            await handle_set_whitelist(exception_ips, all_imsis_str)
+                
+                if mode in ["whitelist", "blacklist"]:
+                    await execute_commands()
         
         return {
             "status": "success",
@@ -88,11 +165,7 @@ def create_target(db: Session, name: str, imsi: str, alert_status: str = None, t
         }
 
 
-def update_target(db: Session, target_id: int, name: str = None, imsi: str = None, 
-                 alert_status: str = None, target_status: str = None) -> Dict[str, Any]:
-    """
-    Update an existing target
-    """
+def update_target(db: Session, target_id: int, name: str = None, imsi: str = None, alert_status: str = None, target_status: str = None) -> Dict[str, Any]:
     try:
         target = db.query(Target).filter(Target.id == target_id).first()
         
@@ -232,7 +305,6 @@ def import_targets_from_xlsx(db: Session, file_content: bytes) -> Dict[str, Any]
             "failed": failed,
             "errors": errors
         }
-        
     except Exception as e:
         db.rollback()
         return {
@@ -241,4 +313,44 @@ def import_targets_from_xlsx(db: Session, file_content: bytes) -> Dict[str, Any]
             "imported": 0,
             "failed": 0,
             "errors": [str(e)]
+        }
+
+
+def delete_target(db: Session, target_id: int) -> Dict[str, Any]:
+    """
+    Delete a target by ID
+    """
+    try:
+        target = db.query(Target).filter(Target.id == target_id).first()
+        
+        if not target:
+            return {
+                "status": "error",
+                "message": f"Target with ID {target_id} not found"
+            }
+        
+        # Store data for the response before deleting
+        target_data = {
+            "id": target.id,
+            "name": target.name,
+            "imsi": target.imsi,
+            "alert_status": target.alert_status,
+            "target_status": target.target_status,
+            "created_at": target.created_at.isoformat() if target.created_at else "",
+            "updated_at": target.updated_at.isoformat() if target.updated_at else ""
+        }
+        
+        db.delete(target)
+        db.commit()
+        
+        return {
+            "status": "success",
+            "message": "Target deleted successfully",
+            "data": target_data
+        }
+    except Exception as e:
+        db.rollback()
+        return {
+            "status": "error",
+            "message": f"Error deleting target: {str(e)}"
         }

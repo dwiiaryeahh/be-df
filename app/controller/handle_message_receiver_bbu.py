@@ -7,7 +7,7 @@ import asyncio
 from app.db.database import SessionLocal, engine
 from app.db import models
 from app.service.heartbeat_service import get_heartbeat_by_ip
-from app.service.services import get_frequency, provider_mapping
+from app.service.utils_service import get_frequency, provider_mapping
 from app.service.sniffer_service import insert_sniffer_nmmcfg, reset_nmmcfg
 from app.ws.events import event_bus
 from app.ws import runtime
@@ -43,7 +43,26 @@ def save_xml_file(message, source_ip, folder_name, log_message):
         print("File XML telah dibuat di:", os.path.abspath(file_path))
     else:
         print("Tidak ditemukan XML dalam string yang diberikan.")
+        
 
+def calculate_imei_check_digit(imei_14):
+    """
+    Hitung check digit dari 14 digit IMEI menggunakan Luhn Algorithm.
+    """
+    if len(imei_14) != 14 or not imei_14.isdigit():
+        raise ValueError("IMEI harus 14 digit angka.")
+
+    total = 0
+    for i, digit in enumerate(imei_14):
+        n = int(digit)
+        if i % 2 == 1:
+            n *= 2
+            if n > 9:
+                n -= 9
+        total += n
+
+    check_digit = (10 - (total % 10)) % 10
+    return str(check_digit)
 
 def RespUdp(message, addr):
     print(f"Message : {message}")
@@ -52,7 +71,7 @@ def RespUdp(message, addr):
 
     date_now = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 
-    from app.service.services import get_provider_data
+    from app.service.utils_service import get_provider_data
     from app.service.heartbeat_service import upsert_heartbeat, update_status_ip_sniffer
     from app.service.crawling_service import upsert_crawling
     from app.service.gps_service import upsert_gps, get_gps_data
@@ -82,7 +101,29 @@ def RespUdp(message, addr):
             db.commit()
 
             heartbeat_data = get_heartbeat_by_ip(db, source_ip)
-            start_imsi = heartbeat_data.mcc + heartbeat_data.mnc if heartbeat_data else ""
+            mcc_str = heartbeat_data.mcc
+            mnc_str = heartbeat_data.mnc
+            final_provider = "Other"
+
+            if mcc_str and mnc_str:
+                try:
+                    mcc_list = [x.strip() for x in mcc_str.split(',')]
+                    mnc_list = [x.strip() for x in mnc_str.split(',')]
+                    
+                    providers = []
+                    seen = set()
+                    for c_mcc, c_mnc in zip(mcc_list, mnc_list):
+                        plmn = c_mcc + c_mnc
+                        p = provider_mapping(plmn)
+                        if p not in seen:
+                            providers.append(p)
+                            seen.add(p)
+                    
+                    if providers:
+                        final_provider = ", ".join(providers)
+                
+                except Exception as e:
+                    print(f"[Error] Failed to parse MCC/MNC for Heartbeat: {e}")
 
             heartbeat_data = {
                 "type": "heartbeat",
@@ -92,10 +133,12 @@ def RespUdp(message, addr):
                 "mode": MODE,
                 "ch": CH,
                 "band": BAND or heartbeat_data.band,
-                "provider": provider_mapping(start_imsi),
+                "provider": final_provider,
                 "mcc": heartbeat_data.mcc,
                 "mnc": heartbeat_data.mnc,
                 "arfcn": heartbeat_data.arfcn,
+                "ul": heartbeat_data.ul_freq,
+                "dl": heartbeat_data.dl_freq,
                 "timestamp": date_now
             }
             schedule_async_task(event_bus.send_heartbeat(heartbeat_data))
@@ -115,7 +158,15 @@ def RespUdp(message, addr):
             imsi = message.split("imsi[")[1].split("]")[0]
             ch_match = re.search(r"CH-(\S+)", message)
             ch = ch_match.group(1) if ch_match else None
-
+            
+            result_imei = None
+            if "imei[" in message and "]" in message:
+                imei = message.split("imei[")[1].split("]")[0]
+                imei14 = imei[:14]
+                if imei14.isdigit() and len(imei14) == 14:
+                    if imei14[0] != "0" and imei14[-1] != "0":
+                        result_imei = imei14 + calculate_imei_check_digit(imei14)
+            
             freq = get_frequency(source_ip) 
 
             from app.service.campaign_service import get_latest_campaign_id
@@ -133,6 +184,7 @@ def RespUdp(message, addr):
                 ch="CH-" + ch if ch else None,
                 provider=provider_mapping(imsi),
                 campaign_id=campaign_id,
+                imei=result_imei
             )
             db.commit()
 

@@ -1,0 +1,66 @@
+<?xml version='1.0' encoding = 'UTF-8' standalone = 'no' ?>
+<content>
+    <workTypeCfgActive>true </workTypeCfgActive>
+    <workTypeCfg>
+        <workType> 0</workType>
+        <followParaValidIndi>false </followParaValidIndi>
+        <imeiTry>true </imeiTry>
+        <tacUpdatePeriodInSec> 60</tacUpdatePeriodInSec>
+        <cellRipRptEn>false </cellRipRptEn>
+        <ueRptWithMeas>true </ueRptWithMeas>
+        <tacLacMax> 65535</tacLacMax>
+        <tacLacMin> 1</tacLacMin>
+    </workTypeCfg>
+    <cmmUeRedirectCfgActive>true </cmmUeRedirectCfgActive>
+    <cmmUeRedirectCfg>
+        <rejCause> 4</rejCause>
+        <redirectItem itemCnt = "1">
+           <item>
+                <mcc> 0</mcc>
+                <mnc> 0</mnc>
+                <rat>REDIRECT_NONE</rat>
+                <band> 0</band>
+                <fcn> 0</fcn>
+            </item>
+        </redirectItem>
+    </cmmUeRedirectCfg>
+    <blkUeRedirectCfgActive>false </blkUeRedirectCfgActive>
+    <blkUeRedirectCfg>
+        <rejCause> 15</rejCause>
+        <redirectItem itemCnt = "0">
+        </redirectItem>
+    </blkUeRedirectCfg>
+    <whiteUeRedirectCfgActive>true </whiteUeRedirectCfgActive>
+    <whiteUeRedirectCfg>
+        <rejCause> 13</rejCause>
+        <redirectItem itemCnt = "3">
+            <item>
+                <mcc> 0</mcc>
+                <mnc> 0</mnc>
+                <rat>REDIRECT_LTE</rat>
+                <band> 3</band>
+                <fcn> 1475</fcn>
+            </item>
+            <item>
+                <mcc> 0</mcc>
+                <mnc> 0</mnc>
+                <rat>REDIRECT_LTE</rat>
+                <band> 0</band>
+                <fcn> 1475</fcn>
+            </item>
+            <item>
+                <mcc> 0</mcc>
+                <mnc> 0</mnc>
+                <rat>REDIRECT_NONE</rat>
+                <band> 0</band>
+                <fcn> 1475</fcn>
+            </item>
+        </redirectItem>
+    </whiteUeRedirectCfg>
+    <loopFcnCfgEn>false </loopFcnCfgEn>
+    <loopFcnCfg>
+        <loopPeriodSecCnt> 0</loopPeriodSecCnt>
+        <item itemCnt = "0">
+        </item>
+    </loopFcnCfg>
+</content>

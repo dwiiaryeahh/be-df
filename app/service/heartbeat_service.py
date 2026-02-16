@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from app.db.database import SessionLocal
 from app.db.models import  Heartbeat
-from app.service.services import get_provider_data, parse_xml, provider_mapping
+from app.service.utils_service import get_provider_data, get_provider_data_multiple, parse_xml, provider_mapping
 from app.ws.events import event_bus
 
 def get_heartbeat_by_ip(
@@ -20,27 +20,36 @@ def update_heartbeat(
     source_ip: str,
     file_path: str
 ) -> Heartbeat | None:
-    row = db.query(Heartbeat).filter(
-        Heartbeat.source_ip == source_ip
-    ).first()
+    try:
+        row = db.query(Heartbeat).filter(
+            Heartbeat.source_ip == source_ip
+        ).first()
 
-    xml_parsing = parse_xml(file_path, row.mode)
-    freq_provider = get_provider_data(db, xml_parsing.get("frequency"))
+        if not row:
+            return None 
 
-    if not row:
-        return None 
+        xml_parsing = parse_xml(file_path, row.mode)
+        
+        arfcn_raw = xml_parsing.get("frequency", "")
+        
+        freq_data = get_provider_data_multiple(db, arfcn_raw)
 
-    row.mcc = xml_parsing.get("mcc", "")
-    row.mnc = xml_parsing.get("mnc", "")
-    row.band = xml_parsing.get("band", "")
-    row.arfcn = xml_parsing.get("frequency", "")
-    row.dl_freq = freq_provider.get("dl_freq", "")
-    row.ul_freq = freq_provider.get("ul_freq", "")
+        row.mcc = xml_parsing.get("mcc", "")
+        row.mnc = xml_parsing.get("mnc", "")
+        row.band = xml_parsing.get("band", "")
+        row.arfcn = arfcn_raw
+        row.dl_freq = freq_data.get("dl_freq", "")
+        row.ul_freq = freq_data.get("ul_freq", "")
 
-    db.commit()
-    db.refresh(row)
+        db.commit()
+        db.refresh(row)
 
-    return row
+        return row
+    
+    except Exception as e:
+        print(f"[ERROR] Failed to update heartbeat for IP {source_ip}: {str(e)}")
+        db.rollback()
+        return None
 
 # Dipakai ketika melakukan crawling IMSI (START BBU)
 def upsert_heartbeat(db: Session, source_ip: str, state: str, temp: str, mode: str, ch: str, timestamp: str, band: str) -> Heartbeat:
@@ -116,18 +125,18 @@ def parse_timestamp(ts: str) -> datetime | None:
     except Exception:
         return None
 
-async def heartbeat_checker(db: Session):
+async def heartbeat_checker(db: Session, check_count: int = 0):
     now = datetime.now()
     timeout_limit = now - timedelta(seconds=30)
 
-    rows = db.query(Heartbeat).filter(
-        Heartbeat.state != "OFFLINE"
-    ).all()
+    # Get ALL devices (including OFFLINE ones) to continuously broadcast status
+    rows = db.query(Heartbeat).all()
 
     if not rows:
         return
 
     expired: list[Heartbeat] = []
+    offline_devices: list[Heartbeat] = []
 
     for hb in rows:
         ts = parse_timestamp(hb.timestamp)
@@ -137,15 +146,15 @@ async def heartbeat_checker(db: Session):
 
         time_diff = (now - ts).total_seconds()
         
-        if ts < timeout_limit:
+        if ts < timeout_limit and hb.state != "OFFLINE":
             print(f"[INFO] Device {hb.source_ip} timeout detected ({time_diff:.1f}s) - Setting to OFFLINE")
             hb.state = "OFFLINE"
             expired.append(hb)
+        elif hb.state == "OFFLINE":
+            offline_devices.append(hb)
 
-    if not expired:
-        return
-
-    db.commit()
+    if expired:
+        db.commit()
 
     for hb in expired:
         heartbeat_ws = {
@@ -162,18 +171,41 @@ async def heartbeat_checker(db: Session):
             "mcc": hb.mcc,
             "mnc": hb.mnc,
             "arfcn": hb.arfcn,
-            "timestamp": hb.timestamp,  # ✅ GUNAKAN TIMESTAMP ASLI, BUKAN NOW
+            "timestamp": hb.timestamp,
         }
 
         await event_bus.send_heartbeat(heartbeat_ws)
         print(f"[OK] Sent OFFLINE status for {hb.source_ip} via WebSocket")
 
+    if check_count % 10 == 0 and offline_devices:
+        for hb in offline_devices:
+            heartbeat_ws = {
+                "type": "heartbeat",
+                "ip": hb.source_ip,
+                "state": "OFFLINE",
+                "temp": hb.temp,
+                "mode": hb.mode,
+                "ch": hb.ch,
+                "band": hb.band,
+                "provider": provider_mapping(
+                    (hb.mcc or "") + (hb.mnc or "")
+                ),
+                "mcc": hb.mcc,
+                "mnc": hb.mnc,
+                "arfcn": hb.arfcn,
+                "timestamp": hb.timestamp,
+            }
+
+            await event_bus.send_heartbeat(heartbeat_ws)
+
 async def heartbeat_watcher():
-    print("[OK] Heartbeat watcher started (timeout: 5s, check interval: 1s)")
+    print("[OK] Heartbeat watcher started (timeout: 30s, check interval: 1s)")
+    check_count = 0
     while True:
         db = SessionLocal()
         try:
-            await heartbeat_checker(db)
+            await heartbeat_checker(db, check_count)
+            check_count += 1
         except Exception as e:
             print("[HEARTBEAT WATCHER ERROR]", e)
         finally:

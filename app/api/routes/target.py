@@ -2,6 +2,7 @@
 Target endpoints - Target management (List, Create, Update, Import)
 Tags: Target
 """
+from typing import Optional
 from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
 from sqlalchemy.orm import Session
 
@@ -9,26 +10,23 @@ from app.db.database import get_db
 from app.db.schemas import (
     TargetCreate, TargetUpdate,
     TargetListResponse, TargetResponse,
-    TargetImportResponse
+    TargetImportResponse,TargetSingleResponse
 )
 from app.service.target_service import (
     list_targets, create_target,
-    update_target, import_targets_from_xlsx
+    update_target, import_targets_from_xlsx,
+    delete_target
 )
 
 router = APIRouter()
 
-
 @router.get("/target", response_model=TargetListResponse, tags=["Target"])
-def get_target_list(db: Session = Depends(get_db)):
-    """
-    Get list of all targets
-    """
-    result = list_targets(db)
+def get_target_list(target_status: Optional[str] = None, db: Session = Depends(get_db)):
+    result = list_targets(db, target_status=target_status)
     
     if result["status"] == "success":
         return TargetListResponse(
-            status="success",
+            status=result["status"],
             message=result["message"],
             data=result["data"],
             total=result["total"]
@@ -37,30 +35,29 @@ def get_target_list(db: Session = Depends(get_db)):
     raise HTTPException(status_code=500, detail=result["message"])
 
 
-@router.post("/target/create", response_model=TargetResponse, tags=["Target"])
-def add_target(req: TargetCreate, db: Session = Depends(get_db)):
-    """
-    Add a new target
-    """
-    result = create_target(
+@router.post("/target/create", response_model=TargetSingleResponse, tags=["Target"])
+async def add_target(req: TargetCreate, db: Session = Depends(get_db)):
+    result = await create_target(
         db,
         name=req.name,
         imsi=req.imsi,
         alert_status=req.alert_status,
-        target_status=req.target_status
+        target_status=req.target_status,
+        campaign_id=req.campaign_id
     )
     
     if result["status"] == "success":
-        return TargetResponse(**result["data"])
+        return TargetSingleResponse(
+            status=result["status"],
+            message=result["message"],
+            data=result["data"]
+        )
     
     raise HTTPException(status_code=400, detail=result["message"])
 
 
-@router.put("/target/{target_id}/update", response_model=TargetResponse, tags=["Target"])
+@router.put("/target/{target_id}/update", response_model=TargetSingleResponse, tags=["Target"])
 def update_target_endpoint(target_id: int, req: TargetUpdate, db: Session = Depends(get_db)):
-    """
-    Update an existing target
-    """
     result = update_target(
         db,
         target_id=target_id,
@@ -71,25 +68,31 @@ def update_target_endpoint(target_id: int, req: TargetUpdate, db: Session = Depe
     )
     
     if result["status"] == "success":
-        return TargetResponse(**result["data"])
+        return TargetSingleResponse(
+            status=result["status"],
+            message=result["message"],
+            data=result["data"]
+        )
+    
+    raise HTTPException(status_code=404, detail=result["message"])
+
+
+@router.delete("/target/{target_id}/delete", response_model=TargetSingleResponse, tags=["Target"])
+def delete_target_endpoint(target_id: int, db: Session = Depends(get_db)):
+    result = delete_target(db, target_id)
+    
+    if result["status"] == "success":
+        return TargetSingleResponse(
+            status=result["status"],
+            message=result["message"],
+            data=result["data"]
+        )
     
     raise HTTPException(status_code=404, detail=result["message"])
 
 
 @router.post("/target/import", response_model=TargetImportResponse, tags=["Target"])
 async def import_targets(file: UploadFile = File(...), db: Session = Depends(get_db)):
-    """
-    Import targets from XLSX file
-    
-    Expected XLSX format:
-    - Column 1: name (required)
-    - Column 2: imsi (required)
-    - Column 3: alert_status (optional)
-    - Column 4: target_status (optional)
-    
-    First row should be headers.
-    """
-    # Validate file extension
     if not file.filename.endswith(('.xlsx', '.xls')):
         raise HTTPException(
             status_code=400,
@@ -97,15 +100,12 @@ async def import_targets(file: UploadFile = File(...), db: Session = Depends(get
         )
     
     try:
-        # Read file content
         file_content = await file.read()
-        
-        # Import targets
         result = import_targets_from_xlsx(db, file_content)
         
         if result["status"] == "success":
             return TargetImportResponse(
-                status="success",
+                status=result["status"],
                 message=result["message"],
                 imported=result["imported"],
                 failed=result["failed"],

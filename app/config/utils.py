@@ -18,7 +18,10 @@ GetNmmCfg = "GetNmmCfgRsp"
 StartCell = "StartCell"
 StopCell = "StopCell"
 OneUeInfoIndi = "OneUeInfoIndi"
+GetBlackList = "GetBlackList"
 SetBlackList = "SetBlackList" # + " " + IMSI
+GetWhiteList = "GetWhiteList"
+SetWhiteList = "SetWhiteList"
 SetUlPcPara = "SetUlPcPara 40 30 1"
 
 db_setting = "setting.db"

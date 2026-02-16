@@ -2,32 +2,32 @@
     {
         "brand": "PSN",
         "mcc": "510",
-        "mnc": "0"
+        "mnc": "00"
     },
     {
         "brand": "Indosat",
         "mcc": "510",
-        "mnc": "1"
+        "mnc": "01"
     },
     {
         "brand": "StarOne",
         "mcc": "510",
-        "mnc": "3"
+        "mnc": "03"
     },
     {
         "brand": "TelkomFlexi",
         "mcc": "510",
-        "mnc": "7"
+        "mnc": "07"
     },
     {
         "brand": "AXIS",
         "mcc": "510",
-        "mnc": "8"
+        "mnc": "08"
     },
     {
         "brand": "Smartfren",
         "mcc": "510",
-        "mnc": "9"
+        "mnc": "09"
     },
     {
         "brand": "Telkomsel",

@@ -1,0 +1,73 @@
+<?xml version='1.0' encoding = 'UTF-8' standalone = 'no' ?>
+<content>
+    <workTypeCfgActive>true </workTypeCfgActive>
+    <workTypeCfg>
+        <workType> 5</workType>
+        <followParaValidIndi>false </followParaValidIndi>
+        <imeiTry>true </imeiTry>
+        <tacUpdatePeriodInSec> 360</tacUpdatePeriodInSec>
+        <cellRipRptEn>false </cellRipRptEn>
+        <ueRptWithMeas>false </ueRptWithMeas>
+        <tacLacMax> 0</tacLacMax>
+        <tacLacMin> 0</tacLacMin>
+    </workTypeCfg>
+    <cmmUeRedirectCfgActive>true </cmmUeRedirectCfgActive>
+    <cmmUeRedirectCfg>
+        <rejCause> 3</rejCause>
+        <redirectItem itemCnt = "2">
+            <item>
+                <mcc> 0</mcc>
+                <mnc> 0</mnc>
+                <rat>REDIRECT_GSM</rat>
+                <band> 9</band>
+                <fcn> 9999</fcn>
+            </item>
+            <item>
+                <mcc> 0</mcc>
+                <mnc> 0</mnc>
+                <rat>REDIRECT_GSM</rat>
+                <band> 9</band>
+                <fcn> 9999</fcn>
+            </item>
+        </redirectItem>
+    </cmmUeRedirectCfg>
+    <blkUeRedirectCfgActive>false </blkUeRedirectCfgActive>
+    <blkUeRedirectCfg>
+        <rejCause> 15</rejCause>
+        <redirectItem itemCnt = "0">
+        </redirectItem>
+    </blkUeRedirectCfg>
+    <whiteUeRedirectCfgActive>true </whiteUeRedirectCfgActive>
+    <whiteUeRedirectCfg>
+        <rejCause> 17</rejCause>
+        <redirectItem itemCnt = "3">
+            <item>
+                <mcc> 0</mcc>
+                <mnc> 0</mnc>
+                <rat>REDIRECT_LTE</rat>
+                <band> 3</band>
+                <fcn> 1850</fcn>
+            </item>
+            <item>
+                <mcc> 0</mcc>
+                <mnc> 0</mnc>
+                <rat>REDIRECT_LTE</rat>
+                <band> 0</band>
+                <fcn> 1850</fcn>
+            </item>
+            <item>
+                <mcc> 0</mcc>
+                <mnc> 0</mnc>
+                <rat>REDIRECT_NONE</rat>
+                <band> 0</band>
+                <fcn> 1850</fcn>
+            </item>
+        </redirectItem>
+    </whiteUeRedirectCfg>
+    <loopFcnCfgEn>false </loopFcnCfgEn>
+    <loopFcnCfg>
+        <loopPeriodSecCnt> 0</loopPeriodSecCnt>
+        <item itemCnt = "0">
+        </item>
+    </loopFcnCfg>
+</content>
