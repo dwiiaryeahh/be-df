@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy import text
 from sqlalchemy.orm import Session
-from datetime import datetime, time
+from datetime import datetime
+import time
 from app.db.database import get_db
 from app.service.log_service import list_logs
 
