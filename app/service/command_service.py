@@ -58,7 +58,6 @@ async def handle_start_cell(ip_list: list, db: Session = None, mode: str = None,
             
             if duration:
                 timer_ops = get_timer_ops_instance()
-                # If resuming, pass the current_elapsed time so timer knows where to continue
                 timer_ops.start_timer(active_campaign.id, mode, duration, initial_elapsed=current_elapsed)
                 logger.info(f"[StartCell] Started timer for campaign {active_campaign.id} (elapsed: {current_elapsed}s)")
     
@@ -215,4 +214,23 @@ async def handle_get_cellpara(ip_list: list, db: Session) -> CommandResponse:
         last_checked=time.strftime("%Y-%m-%d %H:%M:%S"),
         details=results
     )
+    
+def handle_get_appcfgext(ip_list: list, db: Session):
+    try:
+        results = []
+        for ip in ip_list:
+            try:
+                get_send_command_instance().command(ip, XML_TYPE_MAP["app_cfg_ext"]["get"])
+                file_path = build_xml_path("app_cfg_ext", ip)
+                exists = os.path.exists(file_path)
+                msg = "File XML telah dibuat berdasarkan IP" if exists else "Perintah dikirim, menunggu file XML"
+                results.append({"ip": ip, "status": "success", "file_exists": exists, "file_path": file_path, "message": msg})
+            except Exception as e:
+                results.append({"ip": ip, "status": "error", "error": str(e)})
+
+        return {"status": "success", "last_checked": time.strftime("%Y-%m-%d %H:%M:%S"), "details": results}
+    except Exception as e:
+        results.append(CommandResult(ip=ip, status="error", error=str(e)))
+    except Exception as e:
+        return {"status": "error", "last_checked": time.strftime("%Y-%m-%d %H:%M:%S"), "details": [{"error": str(e)}]}
 

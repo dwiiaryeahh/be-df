@@ -1,4 +1,3 @@
-# app/controller/handle_message_receiver_bbu.py
 from app.config.utils import HeartBeat, GetCellParaRsp, GetAppCfgExtRsp, OneUeInfoIndi, GPSInfoIndi
 import time
 import re
@@ -9,10 +8,10 @@ from app.db import models
 from app.service.heartbeat_service import get_heartbeat_by_ip
 from app.service.utils_service import get_frequency, provider_mapping
 from app.service.sniffer_service import insert_sniffer_nmmcfg, reset_nmmcfg
+from app.service.wb_status_service import get_wb_status
 from app.ws.events import event_bus
 from app.ws import runtime
 
-# Helper function to schedule async tasks from sync context
 def schedule_async_task(coro):
     """Schedule an async task safely from synchronous context using main event loop"""
     if runtime.main_loop is not None:
@@ -46,9 +45,6 @@ def save_xml_file(message, source_ip, folder_name, log_message):
         
 
 def calculate_imei_check_digit(imei_14):
-    """
-    Hitung check digit dari 14 digit IMEI menggunakan Luhn Algorithm.
-    """
     if len(imei_14) != 14 or not imei_14.isdigit():
         raise ValueError("IMEI harus 14 digit angka.")
 
@@ -84,9 +80,15 @@ def RespUdp(message, addr):
             MODE = message.split("MODE[")[1].split("]")[0]
             BAND = message.split("BAND[")[1].split("]")[0]
             CH = message.split(" ")[3]
+            
+            wb_status = get_wb_status(db)
+            if wb_status is not None:
+                if STATE == "CLOSED":
+                    if wb_status == 0:
+                        STATE = "ONLINE"
+                    elif wb_status == 1:
+                        STATE = "STATE_CELL_RF_OPEN"
 
-            if STATE == "CLOSED":
-                STATE = "ONLINE"
 
             upsert_heartbeat(
                 db=db,
@@ -171,41 +173,41 @@ def RespUdp(message, addr):
 
             from app.service.campaign_service import get_latest_campaign_id
             campaign_id = get_latest_campaign_id(db)
-
-            upsert_crawling(
-                db=db,
-                timestamp=date_now,
-                rsrp=rsrp,
-                taType=taType,
-                ulCqi=ulCqi,
-                ulRssi=ulRssi,
-                imsi=imsi,
-                ip=source_ip,
-                ch="CH-" + ch if ch else None,
-                provider=provider_mapping(imsi),
-                campaign_id=campaign_id,
-                imei=result_imei
-            )
-            db.commit()
-
-            crawling_data = {
-                "type": "crawling",
-                "provider": provider_mapping(imsi),
-                "imsi": imsi,
-                "timestamp": date_now,
-                "rsrp": rsrp,
-                "taType": taType,
-                "ulCqi": ulCqi,
-                "ulRssi": ulRssi,
-                "ip": source_ip,
-                "ch": "CH-" + ch if ch else None,  
-                "arfcn": freq["arfcn"] if freq else None,
-                "ul_freq": freq["ul_freq"] if freq else None,
-                "dl_freq": freq["dl_freq"] if freq else None,
-                "mode": freq["mode"] if freq else None,
-                "campaign_id": campaign_id
-            }
-            schedule_async_task(event_bus.send_crawling(crawling_data))
+            if campaign_id is not None:
+                upsert_crawling(
+                    db=db,
+                    timestamp=date_now,
+                    rsrp=rsrp,
+                    taType=taType,
+                    ulCqi=ulCqi,
+                    ulRssi=ulRssi,
+                    imsi=imsi,
+                    ip=source_ip,
+                    ch="CH-" + ch if ch else None,
+                    provider=provider_mapping(imsi),
+                    campaign_id=campaign_id,
+                    imei=result_imei
+                )
+                db.commit()
+                
+                crawling_data = {
+                    "type": "crawling",
+                    "provider": provider_mapping(imsi),
+                    "imsi": imsi,
+                    "timestamp": date_now,
+                    "rsrp": rsrp,
+                    "taType": taType,
+                    "ulCqi": ulCqi,
+                    "ulRssi": ulRssi,
+                    "ip": source_ip,
+                    "ch": "CH-" + ch if ch else None,  
+                    "arfcn": freq["arfcn"] if freq else None,
+                    "ul_freq": freq["ul_freq"] if freq else None,
+                    "dl_freq": freq["dl_freq"] if freq else None,
+                    "mode": freq["mode"] if freq else None,
+                    "campaign_id": campaign_id
+                }
+                schedule_async_task(event_bus.send_crawling(crawling_data))
 
         elif GPSInfoIndi in message:
             latitude = message.split("latitude[")[1].split("]")[0]

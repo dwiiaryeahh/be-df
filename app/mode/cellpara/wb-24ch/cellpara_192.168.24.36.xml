@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding = 'UTF-8' standalone = 'no' ?>
+<content>
+    <rxGain> 65</rxGain>
+    <txPwr> 60</txPwr>
+    <cell itemCnt = "2">
+        <item>
+            <arfcnList>
+                <arfcn itemCnt = "1"> 88</arfcn>
+            </arfcnList>
+            <mcc> 510</mcc>
+            <mnc> 11</mnc>
+            <lai> 2</lai>
+            <sib3CellId> 6</sib3CellId>
+            <bsic> 7</bsic>
+            <cro> 63</cro>
+            <rxLevAccMin> 0</rxLevAccMin>
+            <reselctHyst> 0</reselctHyst>
+            <nbFreq> 60</nbFreq>
+        </item>
+	<item>
+            <arfcnList>
+                <arfcn itemCnt = "1"> 91</arfcn>
+            </arfcnList>
+            <mcc> 510</mcc>
+            <mnc> 11</mnc>
+            <lai> 34</lai>
+            <sib3CellId> 44</sib3CellId>
+            <bsic> 55</bsic>
+            <cro> 63</cro>
+            <rxLevAccMin> 0</rxLevAccMin>
+            <reselctHyst> 0</reselctHyst>
+            <nbFreq> 99</nbFreq>
+        </item>
+
+    </cell>
+</content>

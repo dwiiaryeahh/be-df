@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding = 'UTF-8' standalone = 'no' ?>
+<content>
+    <band> 40</band>
+    <erfcn> 39448</erfcn>
+    <pci> 344</pci>
+    <rxGain> 45</rxGain>
+    <txPwrLevel> 5</txPwrLevel>
+    <listenErfcn> 39448</listenErfcn>
+    <listenPci> 0</listenPci>
+    <publicTac> 0</publicTac>
+    <mcc> 510</mcc>
+    <mnc> 10</mnc>
+    <tac> 115</tac>
+    <cellId> 1166</cellId>
+    <tddSa> 2</tddSa>
+    <tddSfp> 7</tddSfp>
+    <qRxLevMin> -70</qRxLevMin>
+    <prachRootSeqIdx> 22</prachRootSeqIdx>
+    <prachCfgIdx> 1</prachCfgIdx>
+    <prachZeroZoneCfg> 1</prachZeroZoneCfg>
+    <prachFreqOff> 2</prachFreqOff>
+    <pdschRefSigPwr> 40</pdschRefSigPwr>
+    <ulTxPwrMax> 26</ulTxPwrMax>
+    <synMode> 2</synMode>
+    <cellOnIfSynFail>true </cellOnIfSynFail>
+    <gpsFrameOffsetInNs> 2</gpsFrameOffsetInNs>
+    <mcc1> 0</mcc1>
+    <mnc1> 0</mnc1>
+    <mcc2> 0</mcc2>
+    <mnc2> 0</mnc2>
+    <sib7Enable>false </sib7Enable>
+    <sib7>
+        <tReselectionGeran> 0</tReselectionGeran>
+        <tReselctGeranSfPresent>false </tReselctGeranSfPresent>
+        <tReselctGeranSf>
+            <med>SPEED_SCAL_FACTOR_SF_0D25</med>
+            <high>SPEED_SCAL_FACTOR_SF_1D0</high>
+        </tReselctGeranSf>
+        <geran itemCnt = "0">
+        </geran>
+    </sib7>
+    <lcRbCfgRedefIndi>false </lcRbCfgRedefIndi>
+    <lcRbShiftStart> 65531</lcRbShiftStart>
+    <lcRbCnt> 3</lcRbCnt>
+    <fcn2En>false </fcn2En>
+    <fcn2> 0</fcn2>
+</content>

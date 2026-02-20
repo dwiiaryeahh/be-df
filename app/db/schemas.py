@@ -251,3 +251,32 @@ class CommandResponse(BaseModel):
     status: str
     last_checked: str
     details: List[CommandResult]
+
+
+class RadiusTech(BaseModel):
+    lte: Optional[str] = None
+    wcdma: Optional[str] = None
+    gsm: Optional[str] = None
+
+
+class RadiusRxTx(BaseModel):
+    rx: Optional[RadiusTech] = None
+    tx: Optional[RadiusTech] = None
+
+
+class RadiusRequest(BaseModel):
+    radius: Optional[RadiusRxTx] = None
+# {
+#   "radius": {
+#     "rx": {
+#       "lte": "45",
+#       "wcdma": "29",
+#       "gsm": "30"
+#     },
+#     "tx": {
+#       "lte": "5",
+#       "wcdma": null,
+#       "gsm": null
+#     }
+#   }
+# }

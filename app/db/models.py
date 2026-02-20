@@ -153,3 +153,24 @@ class WbStatus(Base):
     id = Column(Integer, primary_key=True, index=True)
     status = Column(Boolean, nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+class DistanceRadius(Base):
+    __tablename__ = "distance_radius"
+
+    id = Column(Integer, primary_key=True, index=True)
+    rx_lte = Column(Integer, nullable=True)
+    rx_wcdma = Column(Integer, nullable=True)
+    rx_gsm = Column(Integer, nullable=True)
+    tx_lte = Column(Integer, nullable=True)
+    tx_wcdma = Column(Integer, nullable=True)
+    tx_gsm = Column(Integer, nullable=True)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+class Logs(Base):
+    __tablename__ = "logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    description = Column(String, nullable=False)
+    type = Column(String, nullable=True) # info, error, warning, success
+    user = Column(String, nullable=True)
+    timestamp = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

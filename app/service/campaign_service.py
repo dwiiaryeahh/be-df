@@ -1,9 +1,12 @@
 from typing import Dict, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from app.api.routes.crawling import start_crawling
+from app.db.database import SessionLocal
 from app.db.models import Crawling, Campaign
+from app.service.crawling_service import start_crawling
+from app.service.wb_status_service import update_wb_status
 from app.utils.logger import setup_logger
+from app.service.log_service import add_log
 
 logger = setup_logger("CAMPAIGN_SERVICE")
 
@@ -88,6 +91,7 @@ async def create_campaign(db: Session, name: str, imsi: str, provider: str, mode
             ip=None
         )
         await start_crawling(req=crawling_request, db=db)
+        add_log(db, f"Campaign '{name}' started", "info", "User")
         return {
             "status": "success",
             "message": "Campaign created and crawling started successfully",
@@ -175,66 +179,17 @@ def get_campaign_detail(db: Session, campaign_id: int) -> Dict:
             "crawlings": crawling_data
         }
     }
-
-
-def update_campaign_status(db: Session, campaign_id: int, new_status: str) -> Dict:
-    from datetime import datetime
-    
-    campaign = db.query(Campaign).filter(Campaign.id == campaign_id).first()
-    
-    if not campaign:
-        return {
-            "status": "error",
-            "message": f"Campaign with id {campaign_id} not found",
-            "data": None
-        }
-    
-    try:
-        campaign.status = new_status
-        # Set stop_scan timestamp when status is stopped
-        if new_status.lower() in ["stopped", "completed", "failed"]:
-            campaign.stop_scan = datetime.now()
-        db.commit()
-        db.refresh(campaign)
-        
-        return {
-            "status": "success",
-            "message": f"Campaign status updated to {new_status}",
-            "data": {
-                "id": campaign.id,
-                "name": campaign.name,
-                "imsi": campaign.imsi,
-                "provider": campaign.provider,
-                "status": campaign.status,
-                "mode": campaign.mode,
-                "duration": campaign.duration,
-                "created_at": campaign.created_at.isoformat() if campaign.created_at else None,
-                "start_scan": campaign.start_scan.isoformat() if campaign.start_scan else None,
-                "stop_scan": campaign.stop_scan.isoformat() if campaign.stop_scan else None
-            }
-        }
-    except Exception as e:
-        db.rollback()
-        return {
-            "status": "error",
-            "message": f"Failed to update campaign: {str(e)}",
-            "data": None
-        }
     
 def get_latest_campaign_id(db: Session) -> int:
     campaign = db.query(Campaign).order_by(Campaign.id.desc()).first()
     return campaign.id if campaign else None
 
 async def stop_campaign(db: Session, campaign_id: int) -> Dict:
-    """
-    Stop campaign: update status to 'stopped', stop timer, and stop all BBU cells
-    """
     from app.service.timer_service import get_timer_ops_instance
     from app.service.utils_service import get_all_ips_db
     from app.service.command_service import handle_stop_cell
     from datetime import datetime
     
-    # Get campaign
     campaign = db.query(Campaign).filter(Campaign.id == campaign_id).first()
     if not campaign:
         logger.error(f"[StopCampaign] Campaign {campaign_id} not found")
@@ -244,38 +199,26 @@ async def stop_campaign(db: Session, campaign_id: int) -> Dict:
         }
     
     try:
-        # Update campaign status to 'completed'
         campaign.status = 'completed'
         campaign.stop_scan = datetime.now()
         db.commit()
         logger.info(f"[StopCampaign] Campaign {campaign_id} marked as completed")
         
-        # Stop timer
         timer_ops = get_timer_ops_instance()
         timer_ops.stop_timer(campaign_id)
         logger.info(f"[StopCampaign] Timer stopped for campaign {campaign_id}")
         
-        # Stop all BBU cells
         all_ips = get_all_ips_db(db)
         logger.info(f"[StopCampaign] Stopping cells for IPs: {all_ips}")
         
-        command_result = await handle_stop_cell(all_ips)
+        await handle_stop_cell(all_ips)
+        update_wb_status(db, False)
         
-        stopped_ips = [res.ip for res in command_result.details if res.status == "success"]
-        failed_ips = [{"ip": res.ip, "error": res.error} for res in command_result.details if res.status == "error"]
-        
+        add_log(db, f"Campaign '{campaign.name}' stopped", "info", "User")
         return {
             "status": "success",
             "message": f"Campaign {campaign_id} stopped successfully",
-            "data": {
-                "campaign_id": campaign_id,
-                "campaign_status": "stopped",
-                "timer_stopped": True,
-                "cells_stopped": len(stopped_ips),
-                "cells_failed": len(failed_ips),
-                "stopped_ips": stopped_ips,
-                "failed_ips": failed_ips
-            }
+            "data": {}
         }
     except Exception as e:
         logger.error(f"[StopCampaign] Error stopping campaign {campaign_id}: {e}")

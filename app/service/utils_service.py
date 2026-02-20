@@ -120,7 +120,7 @@ def get_provider_data(db: Session, arfcn: int):
         "mode": row.mode,
     }
 
-def get_provider_data_multiple(db: Session, arfcn_raw: str):
+def get_frequency_by_arfcn(db: Session, arfcn_raw: str):
     if not arfcn_raw:
         return {
             "dl_freq": "",
@@ -158,7 +158,28 @@ def get_provider_data_multiple(db: Session, arfcn_raw: str):
         "dl_freq": dl_freq_result,
         "ul_freq": ul_freq_result
     }
+    
+# untuk mendapatkan provider yang mcc dan mnc nya lebih dari 1
+def get_provider_by_mcc_mnc(mcc: str, mnc: str) -> str:
+    final_provider = "Other"
+    mcc_list = [x.strip() for x in mcc.split(',')]
+    mnc_list = [x.strip() for x in mnc.split(',')]
+    
+    providers = []
+    seen = set()
+    for c_mcc, c_mnc in zip(mcc_list, mnc_list):
+        plmn = c_mcc + c_mnc
+        p = provider_mapping(plmn)
+        if p not in seen:
+            providers.append(p)
+            seen.add(p)
+    
+    if providers:
+        final_provider = ", ".join(providers)
+        
+    return final_provider
 
+# mapping provider berdarsarkan IMSI
 def provider_mapping(imsi: str) -> str:
     if imsi.startswith("51010"):
         return "Telkomsel"

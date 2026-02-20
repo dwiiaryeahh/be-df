@@ -13,7 +13,7 @@ from app.db.database import engine, SessionLocal
 from app.db import models
 from app.db.seeds import seed_all
 from app.ws import runtime
-from app.api.routes import websocket, campaign, license, target, crawling, xml
+from app.api.routes import distance, websocket, campaign, license, target, crawling, health
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DOCS_PATH = os.path.join(BASE_DIR, "docs", "docs.html")
@@ -30,6 +30,7 @@ async def on_startup():
     
     from app.service.timer_service import get_timer_ops_instance
     from app.db.database import SessionLocal
+    from app.service.msisdn_service import start_background_msisdn_checker
     
     db = SessionLocal()
     try:
@@ -39,6 +40,12 @@ async def on_startup():
         print(f"Error recovering campaigns: {e}")
     finally:
         db.close()
+    
+    # Start background MSISDN checker
+    try:
+        start_background_msisdn_checker(interval_seconds=5)
+    except Exception as e:
+        print(f"Error starting background MSISDN checker: {e}")
 
 app.add_middleware(
     CORSMiddleware,
@@ -55,9 +62,10 @@ def get_spotlight():
 app.include_router(websocket.router)
 app.include_router(target.router)
 app.include_router(campaign.router)
-app.include_router(xml.router)
+app.include_router(distance.router)
 app.include_router(crawling.router)
 app.include_router(license.router)
+app.include_router(health.router)
 
 
 class MyApp:

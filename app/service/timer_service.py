@@ -10,8 +10,9 @@ from sqlalchemy.orm import Session
 from app.db.database import SessionLocal
 from app.db.models import Campaign, Target, Heartbeat, Operator
 from app.service.utils_service import get_send_command_instance, provider_mapping
+from app.service.wb_status_service import update_wb_status
 from app.utils.logger import setup_logger
-
+from app.service.log_service import add_log
 
 class TimerOps:
     def __init__(self):
@@ -203,6 +204,9 @@ class TimerOps:
             remaining = duration_seconds - initial_elapsed
             if remaining <= 0:
                 # Should have been caught before calling this, but safety check
+                campaign = db.query(Campaign).filter(Campaign.id == campaign_id).first()
+                if campaign:
+                    add_log(db, f"Campaign '{campaign.name}' Stopped", "info", "System")
                 self.logger.info(f"[Timer] Simple timer already expired (elapsed: {initial_elapsed}s)")
                 return
 
@@ -220,6 +224,7 @@ class TimerOps:
                     campaign.status = 'completed'
                     campaign.stop_scan = datetime.now()
                     db.commit()
+                    add_log(db, f"Campaign '{campaign.name}' Stopped", "info", "System")
                     self.logger.info(f"[Timer] Campaign {campaign_id} marked as completed")
             
             self.logger.info(f"[Timer] Simple timer completed for campaign {campaign_id}")
@@ -263,6 +268,7 @@ class TimerOps:
                             campaign.status = 'completed'
                             campaign.stop_scan = datetime.now()
                             db.commit()
+                            add_log(db, f"Campaign '{campaign.name}' Stopped", "info", "System")
                     return
             
             # Phase 2: Stop for 5 minutes (300 seconds) -- 120 to 420s
@@ -288,6 +294,7 @@ class TimerOps:
                             campaign.status = 'completed'
                             campaign.stop_scan = datetime.now()
                             db.commit()
+                            add_log(db, f"Campaign '{campaign.name}' Stopped", "info", "System")
                     return
             
             # Phase 3: Run for 30 seconds -- 420 to 450s
@@ -312,19 +319,12 @@ class TimerOps:
                             campaign.status = 'completed'
                             campaign.stop_scan = datetime.now()
                             db.commit()
+                            add_log(db, f"Campaign '{campaign.name}' Stopped", "info", "System")
                     return
             
             # Phase 4: Cycle (30 sec run -> 5 min stop) until duration expires
             self.logger.info("[Timer] Phase 4: Entering cycle mode (30s run -> 5min stop)...")
-            
-            # If resuming directly into cycling, we rely on the loop.
-            # But wait, Cycle starts with Stop (Wait 300s).
-            # If we resume at 500s (Phase 4 + 50s).
-            # The loop structure is: Stop(300s) -> Start(30s).
-            # We strictly restart the cycle from the top if we reach here.
-            # This is acceptable because determining exact sub-phase in cycle is overkill.
-            # We just restart the cycle: Stop 5m -> Start 30s.
-            
+
             while self.is_running.get(campaign_id, False):
                 # Refresh target IMSIs at the beginning of each cycle to get latest data
                 target_imsis = self.get_active_target_imsis(db, campaign_id)
@@ -343,6 +343,7 @@ class TimerOps:
                             campaign.status = 'completed'
                             campaign.stop_scan = datetime.now()
                             db.commit()
+                            add_log(db, f"Campaign '{campaign.name}' Stopped", "info", "System")
                     break
                 
                 # Refresh again before starting (in case it was updated during the 5-minute stop)
@@ -362,6 +363,7 @@ class TimerOps:
                             campaign.status = 'completed'
                             campaign.stop_scan = datetime.now()
                             db.commit()
+                            add_log(db, f"Campaign '{campaign.name}' Stopped", "info", "System")
                     break
             
             self.logger.info(f"[Timer] Timer cycle completed for campaign {campaign_id}")
@@ -396,6 +398,7 @@ class TimerOps:
         
         task = asyncio.create_task(coro)
         self.active_timers[campaign_id] = task
+        update_wb_status(SessionLocal(), True)
         self.logger.info(f"[Timer] Started timer for campaign {campaign_id}, mode: {mode}, duration: {duration} (initial elapsed: {initial_elapsed}s)")
     
     def stop_timer(self, campaign_id: int):
@@ -443,6 +446,7 @@ class TimerOps:
 
     def stop_all_timers(self):
         """Stop all active timers"""
+        update_wb_status(SessionLocal(), False)
         for campaign_id in list(self.active_timers.keys()):
             self.stop_timer(campaign_id)
 

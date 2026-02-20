@@ -18,6 +18,8 @@ from reportlab.lib import colors
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 
+from app.service.log_service import add_log
+
 
 def get_campaign_with_crawling(db: Session, campaign_id: int) -> Dict:
     """Get campaign dan crawling data"""
@@ -44,6 +46,7 @@ def generate_pdf(db: Session, campaign_id: int) -> bytes:
     if data["status"] == "error":
         return None
     
+    add_log(db, f"Exported campaign {data['campaign'].name} data as PDF", "info", "User")
     campaign = data["campaign"]
     crawlings = data["crawlings"]
     
@@ -56,7 +59,7 @@ def generate_pdf(db: Session, campaign_id: int) -> bytes:
     imsi_detected = len(crawlings)
     alert_count = 0
     
-    table_data = [['No', 'IMSI', 'Time', 'Count', 'Alert Status', 'Alert Name']]
+    table_data = [['No', 'IMSI', 'MSISDN', 'Time', 'Count', 'Alert Status', 'Alert Name']]
     
     for idx, crawl in enumerate(crawlings, 1):
         if hasattr(crawl, 'timestamp') and crawl.timestamp:
@@ -75,10 +78,12 @@ def generate_pdf(db: Session, campaign_id: int) -> bytes:
             alert_count += 1
             
         count_val = str(crawl.count) if crawl.count is not None else "0"
+        msisdn_val = crawl.msisdn if crawl.msisdn else "-"
         
         table_data.append([
             str(idx),
             crawl.imsi,
+            msisdn_val,
             timestamp_str,
             count_val,
             alert_status,
@@ -191,7 +196,7 @@ def generate_pdf(db: Session, campaign_id: int) -> bytes:
     elements.append(info_table)
     elements.append(Spacer(1, 0.3*inch))
     
-    crawling_table = Table(table_data, colWidths=[0.5*inch, 1.5*inch, 1.5*inch, 0.8*inch, 1.2*inch, 2.0*inch])
+    crawling_table = Table(table_data, colWidths=[0.5*inch, 1.3*inch, 1.3*inch, 1.3*inch, 0.8*inch, 1.2*inch, 1.8*inch])
     
     crawling_table.setStyle(TableStyle([
         # Header
@@ -232,6 +237,8 @@ def generate_excel(db: Session, campaign_id: int) -> bytes:
     if data["status"] == "error":
         return None
     
+    add_log(db, f"Exported campaign {data['campaign'].name} data as Excel", "info", "User")
+    
     campaign = data["campaign"]
     crawlings = data["crawlings"]
     
@@ -246,7 +253,8 @@ def generate_excel(db: Session, campaign_id: int) -> bytes:
     ws.column_dimensions['C'].width = 15
     ws.column_dimensions['D'].width = 20
     ws.column_dimensions['E'].width = 15
-    ws.column_dimensions['F'].width = 20
+    ws.column_dimensions['F'].width = 18
+    ws.column_dimensions['G'].width = 20
 
     info_font = Font(bold=True, size=11, color="2c3e50")
     info_fill = PatternFill(start_color="ecf0f1", end_color="ecf0f1", fill_type="solid")
@@ -288,7 +296,7 @@ def generate_excel(db: Session, campaign_id: int) -> bytes:
     # Crawling data table
     row += 1
     
-    headers = ["IMSI", "Channel", "Provider", "Lat/Long", "UL RSSI", "Timestamp"]
+    headers = ["IMSI", "MSISDN", "Channel", "Provider", "Lat/Long", "UL RSSI", "Timestamp"]
     for col_num, header in enumerate(headers, 1):
         cell = ws.cell(row=row, column=col_num)
         cell.value = header
@@ -313,9 +321,11 @@ def generate_excel(db: Session, campaign_id: int) -> bytes:
             timestamp_str = "-"
         
         ulrssi_str = str(crawl.ulRssi) if hasattr(crawl, 'ulRssi') and crawl.ulRssi is not None else "-"
+        msisdn_str = crawl.msisdn if crawl.msisdn else "-"
         
         data_row = [
             crawl.imsi,
+            msisdn_str,
             "CH-01",  # TODO: update nanti dari data model
             "Telkomsel",  # TODO: update nanti dari data model
             "-6.2088,106.8456",  # TODO: update nanti dari data model

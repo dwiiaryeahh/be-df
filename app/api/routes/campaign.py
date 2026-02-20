@@ -12,7 +12,7 @@ from app.db.schemas import (
 )
 from app.service.campaign_service import (
     list_campaigns, create_campaign,
-    get_campaign_detail, update_campaign_status
+    get_campaign_detail
 )
 from app.service.export_service import generate_pdf, generate_excel
 
@@ -116,8 +116,7 @@ def export_campaign(campaign_id: int, export_type: str, db: Session = Depends(ge
                 io.BytesIO(excel_bytes),
                 media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 headers={"Content-Disposition": f"attachment; filename=campaign_{campaign_id}_crawling.xlsx"}
-            )
-    
+            )    
     except HTTPException:
         raise
     except Exception as e:

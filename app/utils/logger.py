@@ -1,6 +1,7 @@
 import logging
 import os
-from datetime import datetime
+from sqlalchemy.orm import Session
+from app.db.models import Logs
 
 def setup_logger(name: str) -> logging.Logger:
     logger = logging.getLogger(name)

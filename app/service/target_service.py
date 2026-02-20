@@ -1,14 +1,11 @@
-"""
-Target Service - Business logic untuk target management
-"""
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from app.db.models import Target
-from typing import List, Dict, Any
+from typing import Dict, Any
 import openpyxl
 from io import BytesIO
-from app.service.utils_service import get_all_ips_db
 from app.utils.logger import setup_logger
+from app.service.log_service import add_log
 
 logger = setup_logger("[TARGET SERVICE]")
 
@@ -96,8 +93,7 @@ async def create_target(db: Session, name: str, imsi: str, alert_status: str = N
         db.commit()
         db.refresh(new_target)
         
-        await stop_exeption_ip(db, imsi)
-        
+        await stop_exeption_ip(db, imsi)        
         if campaign_id:
             from app.db.models import Campaign
             from app.service.utils_service import get_exception_ips
@@ -144,6 +140,7 @@ async def create_target(db: Session, name: str, imsi: str, alert_status: str = N
                 if mode in ["whitelist", "blacklist"]:
                     await execute_commands()
         
+        add_log(db, f"Target '{name}' created", "info", "User")
         return {
             "status": "success",
             "message": "Target created successfully",
@@ -200,6 +197,7 @@ def update_target(db: Session, target_id: int, name: str = None, imsi: str = Non
         db.commit()
         db.refresh(target)
         
+        add_log(db, f"Target '{target.name}' updated", "info", "User")
         return {
             "status": "success",
             "message": "Target updated successfully",
@@ -297,7 +295,7 @@ def import_targets_from_xlsx(db: Session, file_content: bytes) -> Dict[str, Any]
         
         # Commit all changes
         db.commit()
-        
+        add_log(db, f"Imported {imported} targets from XLSX", "info", "User")
         return {
             "status": "success",
             "message": f"Import completed: {imported} imported, {failed} failed",
@@ -343,6 +341,7 @@ def delete_target(db: Session, target_id: int) -> Dict[str, Any]:
         db.delete(target)
         db.commit()
         
+        add_log(db, f"Target '{target.name}' deleted", "info", "User")
         return {
             "status": "success",
             "message": "Target deleted successfully",

@@ -1,0 +1,61 @@
+<?xml version='1.0' encoding = 'UTF-8' standalone = 'no' ?>
+<content>
+    <band> 1</band>
+    <erfcn> 75</erfcn>
+    <pci> 34</pci>
+    <rxGain> 45</rxGain>
+    <txPwrLevel> 5</txPwrLevel>
+    <listenErfcn> 0</listenErfcn>
+    <listenPci> 488</listenPci>
+    <publicTac> 4700</publicTac>
+    <mcc> 510</mcc>
+    <mnc> 1</mnc>
+    <tac> 4503</tac>
+    <cellId> 9809</cellId>
+    <tddSa> 0</tddSa>
+    <tddSfp> 0</tddSfp>
+    <qRxLevMin> -60</qRxLevMin>
+    <prachRootSeqIdx> 22</prachRootSeqIdx>
+    <prachCfgIdx> 2</prachCfgIdx>
+    <prachZeroZoneCfg> 10</prachZeroZoneCfg>
+    <prachFreqOff> 2</prachFreqOff>
+    <pdschRefSigPwr> 40</pdschRefSigPwr>
+    <ulTxPwrMax> 26</ulTxPwrMax>
+    <synMode> 0</synMode>
+    <cellOnIfSynFail>true </cellOnIfSynFail>
+    <gpsFrameOffsetInNs> 0</gpsFrameOffsetInNs>
+    <mcc1> 0</mcc1>
+    <mnc1> 0</mnc1>
+    <mcc2> 0</mcc2>
+    <mnc2> 0</mnc2>
+    <sib7Enable>false </sib7Enable>
+    <sib7>
+        <tReselectionGeran> 0</tReselectionGeran>
+        <tReselctGeranSfPresent>false </tReselctGeranSfPresent>
+        <tReselctGeranSf>
+            <med>SPEED_SCAL_FACTOR_SF_0D25</med>
+            <high>SPEED_SCAL_FACTOR_SF_1D0</high>
+        </tReselctGeranSf>
+        <geran itemCnt = "1">
+            <item>
+                <freq>
+                    <band>GRAN_DCS1800</band>
+                    <arfcn> 110</arfcn>
+                </freq>
+                <priorityPresent>true </priorityPresent>
+                <priority> 7</priority>
+                <nccPermitted> 0</nccPermitted>
+                <qRxLevMin> 0</qRxLevMin>
+                <pMaxGeranPresent>false </pMaxGeranPresent>
+                <pMaxGeran> 0</pMaxGeran>
+                <threshxHigh> 0</threshxHigh>
+                <threshxLow> 0</threshxLow>
+            </item>
+        </geran>
+    </sib7>
+    <lcRbCfgRedefIndi>false </lcRbCfgRedefIndi>
+    <lcRbShiftStart> 0</lcRbShiftStart>
+    <lcRbCnt> 0</lcRbCnt>
+    <fcn2En>false </fcn2En>
+    <fcn2> 0</fcn2>
+</content>

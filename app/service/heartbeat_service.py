@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from app.db.database import SessionLocal
 from app.db.models import  Heartbeat
-from app.service.utils_service import get_provider_data, get_provider_data_multiple, parse_xml, provider_mapping
+from app.service.utils_service import get_provider_by_mcc_mnc, get_provider_data, get_frequency_by_arfcn, parse_xml, provider_mapping
 from app.ws.events import event_bus
 
 def get_heartbeat_by_ip(
@@ -32,7 +32,7 @@ def update_heartbeat(
         
         arfcn_raw = xml_parsing.get("frequency", "")
         
-        freq_data = get_provider_data_multiple(db, arfcn_raw)
+        freq_data = get_frequency_by_arfcn(db, arfcn_raw)
 
         row.mcc = xml_parsing.get("mcc", "")
         row.mnc = xml_parsing.get("mnc", "")
@@ -165,13 +165,13 @@ async def heartbeat_checker(db: Session, check_count: int = 0):
             "mode": hb.mode,
             "ch": hb.ch,
             "band": hb.band,
-            "provider": provider_mapping(
-                (hb.mcc or "") + (hb.mnc or "")
-            ),
+            "provider": get_provider_by_mcc_mnc(hb.mcc, hb.mnc),
             "mcc": hb.mcc,
             "mnc": hb.mnc,
             "arfcn": hb.arfcn,
             "timestamp": hb.timestamp,
+            "ul" : hb.ul_freq,
+            "dl" : hb.dl_freq,
         }
 
         await event_bus.send_heartbeat(heartbeat_ws)
@@ -187,13 +187,13 @@ async def heartbeat_checker(db: Session, check_count: int = 0):
                 "mode": hb.mode,
                 "ch": hb.ch,
                 "band": hb.band,
-                "provider": provider_mapping(
-                    (hb.mcc or "") + (hb.mnc or "")
-                ),
+                "provider": get_provider_by_mcc_mnc(hb.mcc, hb.mnc),
                 "mcc": hb.mcc,
                 "mnc": hb.mnc,
                 "arfcn": hb.arfcn,
                 "timestamp": hb.timestamp,
+                "ul" : hb.ul_freq,
+                "dl" : hb.dl_freq,
             }
 
             await event_bus.send_heartbeat(heartbeat_ws)
