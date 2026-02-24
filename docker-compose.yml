@@ -1,10 +1,9 @@
 version: '3.8'
 
 services:
-  # FastAPI Application
   app:
     build: .
-    container_name: backpack_app
+    container_name: be-scoopeedge
     environment:
       DATABASE_URL: ${DATABASE_URL}
       PYTHONUNBUFFERED: 1
