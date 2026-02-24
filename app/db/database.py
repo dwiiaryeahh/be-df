@@ -10,7 +10,7 @@ load_dotenv()
 # Get DATABASE_URL from .env, fallback to SQLite if not set
 SQLALCHEMY_DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "sqlite:///./app.db"  # Fallback untuk development lokal
+    # "sqlite:///./app.db"  # Fallback untuk development lokal
 )
 
 engine = create_engine(

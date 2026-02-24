@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  # FastAPI Application
+  app:
+    build: .
+    container_name: backpack_app
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      PYTHONUNBUFFERED: 1
+    ports:
+      - "${APP_PORT:-8888}:8888"
+    volumes:
+      - ./logs:/app/logs
+      - ./app/mode:/app/app/mode
+      - ./app/xml_file:/app/app/xml_file
+    command: python run.py
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
